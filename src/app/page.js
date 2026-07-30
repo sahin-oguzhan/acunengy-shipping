@@ -1,4 +1,5 @@
 import About from '@/components/About';
+import EliteAdvantage from '@/components/EliteAdvantages';
 import Hero from '@/components/Hero';
 import Industries from '@/components/Industries';
 import Services from '@/components/Services';
@@ -12,6 +13,7 @@ export default function Home() {
       <Stats />
       <Services />
       <Industries />
+      <EliteAdvantage />
     </main>
   );
 }
