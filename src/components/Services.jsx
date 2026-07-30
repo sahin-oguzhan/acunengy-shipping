@@ -1,58 +1,51 @@
 import React from 'react';
 
-const servicesData = [
-  {
-    icon: 'anchor',
-    title: 'Ship Agency',
-    description:
-      'Comprehensive husbandry services, vessel clearance, and berth management with zero-delay protocols.',
-  },
-  {
-    icon: 'directions_boat',
-    title: 'Port Operations',
-    description:
-      'Advanced stevedoring, terminal management, and real-time cargo tracking for optimal throughput efficiency.',
-  },
-  {
-    icon: 'precision_manufacturing',
-    title: 'Project Cargo',
-    description:
-      'Expertise in over-dimensional cargo movements, engineering route surveys, and specialized lifting solutions.',
-  },
-  {
-    icon: 'architecture',
-    title: 'Heavy Lift Logistics',
-    description:
-      "Specialized vessel chartering and engineering oversight for the world's heaviest industrial components.",
-  },
-  {
-    icon: 'wind_power',
-    title: 'Wind Energy',
-    description:
-      'Dedicated offshore wind farm supply chain management, from component storage to marshalling and assembly.',
-  },
-  {
-    icon: 'support_agent',
-    title: 'Hub Agency',
-    description:
-      'Single-point financial management and coordination for global fleets operating across multiple regions.',
-  },
-];
+export default function Services({ dict }) {
+  const servicesData = [
+    {
+      icon: 'anchor',
+      title: dict?.srv1Title,
+      description: dict?.srv1Desc,
+    },
+    {
+      icon: 'directions_boat',
+      title: dict?.srv2Title,
+      description: dict?.srv2Desc,
+    },
+    {
+      icon: 'precision_manufacturing',
+      title: dict?.srv3Title,
+      description: dict?.srv3Desc,
+    },
+    {
+      icon: 'architecture',
+      title: dict?.srv4Title,
+      description: dict?.srv4Desc,
+    },
+    {
+      icon: 'wind_power',
+      title: dict?.srv5Title,
+      description: dict?.srv5Desc,
+    },
+    {
+      icon: 'support_agent',
+      title: dict?.srv6Title,
+      description: dict?.srv6Desc,
+    },
+  ];
 
-export default function Services() {
   return (
     <section className="py-24 px-6 md:px-16 bg-customBg">
       {/* Başlık Alanı */}
       <div className="text-center max-w-3xl mx-auto mb-16 md:mb-20">
         <span className="font-mono text-xs md:text-sm text-customMuted tracking-widest uppercase mb-4 block font-medium">
-          Our Capabilities
+          {dict?.badge}
         </span>
         <h2 className="text-3xl md:text-5xl text-customText font-bold mb-6 font-heading tracking-tight">
-          Integrated Maritime Services
+          {dict?.title}
         </h2>
         <p className="text-customMuted text-base md:text-lg">
-          End-to-end solutions managed with technical mastery and local
-          expertise in every major global territory.
+          {dict?.description}
         </p>
       </div>
 
@@ -85,7 +78,7 @@ export default function Services() {
               href="#"
               className="font-mono text-xs text-customText font-bold flex items-center gap-2 group-hover:gap-4 group-hover:text-customAccent transition-all uppercase tracking-wider"
             >
-              LEARN MORE{' '}
+              {dict?.btnLearnMore || 'LEARN MORE'}{' '}
               <span className="material-symbols-outlined text-sm">
                 arrow_forward
               </span>

@@ -1,0 +1,33 @@
+import Hero from '@/components/Hero';
+import About from '@/components/About';
+import Stats from '@/components/Stats';
+import Services from '@/components/Services';
+import Industries from '@/components/Industries';
+import EliteAdvantage from '@/components/EliteAdvantages';
+import Insights from '@/components/Insights';
+import Contact from '@/components/Contact';
+import Footer from '@/components/Footer';
+import { getDictionary } from '@/dictionaries/getDictionary';
+
+// params bütün olarak alınıyor
+export default async function Home({ params }) {
+  // Promise çözümleniyor
+  const resolvedParams = await params;
+  const locale = resolvedParams.locale;
+
+  const dict = await getDictionary(locale);
+
+  return (
+    <main className="flex flex-col w-full">
+      <Hero dict={dict.hero} />
+      <About dict={dict.about} />
+      <Stats dict={dict.stats} />
+      <Services dict={dict.services} />
+      <Industries dict={dict.industries} />
+      <EliteAdvantage dict={dict.eliteAdvantage} />
+      <Insights dict={dict.insights} />
+      <Contact dict={dict.contact} />
+      <Footer dict={dict.footer} />
+    </main>
+  );
+}

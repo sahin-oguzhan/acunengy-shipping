@@ -1,42 +1,39 @@
 import React from 'react';
 
-const articles = [
-  {
-    category: 'LOGISTICS TRENDS',
-    title: 'The Future of Offshore Wind Logistics',
-    description:
-      'Exploring the technological shifts required to handle the next generation of 20MW offshore turbine components.',
-    image:
-      'https://lh3.googleusercontent.com/aida-public/AB6AXuDjpuE0SwBV4iVDfS4H1gpUyyCvYJf60JwsBvEbwNnRqYWHCvTQ5LDZdVZg-h_mJz_gBR0IL2IxbtNOIwPpVgtuiwt7vzD1qUSAtAddjicI6Pbt6EA67rVQaAhRrlOipeBooo18A91lJcY3c4tGc68_zsNhnxVkWSGjpuKDmfZab77dyuC5tS0ptHYobGwB27zrL51LwZzt5XK5FbGrkAFLdlDLgoLptMCGrJTUwpUgO4o3cEvaee0A',
-  },
-  {
-    category: 'REGULATORY',
-    title: 'IMO 2024: Navigating New Compliance',
-    description:
-      'How ACUNENGY SHIPPING is leading the transition to low-carbon port operations and sustainable shipping practices.',
-    image:
-      'https://lh3.googleusercontent.com/aida-public/AB6AXuAl-sKy6ROYCUpIkoWZd6DiZPqingiTU17ByLNmkZLipR02WSySWKMgEKYbA0Vpo8wCh3QVbqwfXMWIglH996QA939dSMax1uMk_3JJE9VHD5AOfK2ycKcsN0D-ewiX_VeJY83SLhiF3xDCy_WSi3WpnpBRoIzzwClg1VYPzpLx0TNpRJXDPylD7w8NkFzJHbs8GKRoHbtqvm5a16w7R3IKs-Ccn0G9iNfAEuXu3y_y1qAolnLNhUxX',
-  },
-  {
-    category: 'CASE STUDY',
-    title: "Heavy Lift: Project 'Polaris' Completed",
-    description:
-      'A detailed look at the 4,000-ton module transport across the North Sea in record-breaking timeframes.',
-    image:
-      'https://lh3.googleusercontent.com/aida-public/AB6AXuC-_MfOJCJq-YcRdMQuj-us6C6goW_kaMaaS_g0l4U_b8Si-e4TlR5Noj9EGuuZ7gOKRaK0OB-TvVeNVG8ruVB_KARwt9rruNXMs6JU376zkDWg8PoYRjNVcQFGa2f8WuPUE-1ZAVfM01Vzbb38anbpddGv3mSRNaJ8iRO3BTU4RQTDS4MfFkLAokNqOujXJokFHlBmd8959u_sU16vW6DP0hMRdzH_zKXnW_kQ8iuVu098yAH3TfPF',
-  },
-];
+export default function Insights({ dict }) {
+  const articles = [
+    {
+      category: dict?.art1Cat,
+      title: dict?.art1Title,
+      description: dict?.art1Desc,
+      image:
+        'https://lh3.googleusercontent.com/aida-public/AB6AXuDjpuE0SwBV4iVDfS4H1gpUyyCvYJf60JwsBvEbwNnRqYWHCvTQ5LDZdVZg-h_mJz_gBR0IL2IxbtNOIwPpVgtuiwt7vzD1qUSAtAddjicI6Pbt6EA67rVQaAhRrlOipeBooo18A91lJcY3c4tGc68_zsNhnxVkWSGjpuKDmfZab77dyuC5tS0ptHYobGwB27zrL51LwZzt5XK5FbGrkAFLdlDLgoLptMCGrJTUwpUgO4o3cEvaee0A',
+    },
+    {
+      category: dict?.art2Cat,
+      title: dict?.art2Title,
+      description: dict?.art2Desc,
+      image:
+        'https://lh3.googleusercontent.com/aida-public/AB6AXuAl-sKy6ROYCUpIkoWZd6DiZPqingiTU17ByLNmkZLipR02WSySWKMgEKYbA0Vpo8wCh3QVbqwfXMWIglH996QA939dSMax1uMk_3JJE9VHD5AOfK2ycKcsN0D-ewiX_VeJY83SLhiF3xDCy_WSi3WpnpBRoIzzwClg1VYPzpLx0TNpRJXDPylD7w8NkFzJHbs8GKRoHbtqvm5a16w7R3IKs-Ccn0G9iNfAEuXu3y_y1qAolnLNhUxX',
+    },
+    {
+      category: dict?.art3Cat,
+      title: dict?.art3Title,
+      description: dict?.art3Desc,
+      image:
+        'https://lh3.googleusercontent.com/aida-public/AB6AXuC-_MfOJCJq-YcRdMQuj-us6C6goW_kaMaaS_g0l4U_b8Si-e4TlR5Noj9EGuuZ7gOKRaK0OB-TvVeNVG8ruVB_KARwt9rruNXMs6JU376zkDWg8PoYRjNVcQFGa2f8WuPUE-1ZAVfM01Vzbb38anbpddGv3mSRNaJ8iRO3BTU4RQTDS4MfFkLAokNqOujXJokFHlBmd8959u_sU16vW6DP0hMRdzH_zKXnW_kQ8iuVu098yAH3TfPF',
+    },
+  ];
 
-export default function Insights() {
   return (
     <section className="py-24 px-6 md:px-16 bg-customSurface">
       {/* Üst Başlık ve "Tüm Makaleler" Butonu */}
       <div className="flex justify-between items-end mb-16 border-b border-customBorder pb-6">
         <h2 className="text-3xl md:text-5xl text-customText font-bold font-heading">
-          Maritime Insights
+          {dict?.title}
         </h2>
         <button className="font-mono text-sm text-customText border-b-2 border-transparent hover:border-customAccent hover:text-customAccent transition-all uppercase tracking-widest font-bold hidden md:block">
-          ALL ARTICLES
+          {dict?.btnAllArticles}
         </button>
       </div>
 
@@ -63,7 +60,7 @@ export default function Insights() {
               {article.title}
             </h4>
 
-            {/* Açıklama (line-clamp-2 ile sadece 2 satır görünür, sonrası ... olur) */}
+            {/* Açıklama */}
             <p className="text-customMuted text-sm leading-relaxed line-clamp-2">
               {article.description}
             </p>
@@ -73,7 +70,7 @@ export default function Insights() {
 
       {/* Sadece mobilde görünen "Tüm Makaleler" butonu */}
       <button className="mt-10 font-mono text-sm text-customText border-b-2 border-customText hover:border-customAccent hover:text-customAccent transition-all uppercase tracking-widest font-bold block md:hidden mx-auto">
-        ALL ARTICLES
+        {dict?.btnAllArticles}
       </button>
     </section>
   );

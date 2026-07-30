@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function Footer() {
+export default function Footer({ dict }) {
   return (
     <footer className="w-full py-16 px-6 md:px-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 bg-customBg border-t border-customBorder">
       {/* 1. Sütun: Logo ve Hakkında */}
@@ -9,15 +9,14 @@ export default function Footer() {
           ACUNENGY SHIPPING
         </div>
         <p className="text-customMuted text-sm leading-relaxed mb-8">
-          Redefining maritime logistics through engineering excellence and
-          operational precision across the globe.
+          {dict?.description}
         </p>
       </div>
 
       {/* 2. Sütun: Navigasyon */}
       <div>
         <h5 className="text-customText font-mono text-sm uppercase tracking-widest font-bold mb-6">
-          Navigation
+          {dict?.navTitle}
         </h5>
         <ul className="space-y-4">
           <li>
@@ -25,7 +24,7 @@ export default function Footer() {
               href="#"
               className="text-customMuted hover:text-customAccent transition-colors text-sm font-medium"
             >
-              Our Services
+              {dict?.nav1}
             </a>
           </li>
           <li>
@@ -33,7 +32,7 @@ export default function Footer() {
               href="#"
               className="text-customMuted hover:text-customAccent transition-colors text-sm font-medium"
             >
-              Global Network
+              {dict?.nav2}
             </a>
           </li>
           <li>
@@ -41,7 +40,7 @@ export default function Footer() {
               href="#"
               className="text-customMuted hover:text-customAccent transition-colors text-sm font-medium"
             >
-              Fleet Specifications
+              {dict?.nav3}
             </a>
           </li>
           <li>
@@ -49,7 +48,7 @@ export default function Footer() {
               href="#"
               className="text-customMuted hover:text-customAccent transition-colors text-sm font-medium"
             >
-              Case Studies
+              {dict?.nav4}
             </a>
           </li>
         </ul>
@@ -58,7 +57,7 @@ export default function Footer() {
       {/* 3. Sütun: Kurumsal ve Hukuki */}
       <div>
         <h5 className="text-customText font-mono text-sm uppercase tracking-widest font-bold mb-6">
-          Compliance & Legal
+          {dict?.legalTitle}
         </h5>
         <ul className="space-y-4">
           <li>
@@ -66,7 +65,7 @@ export default function Footer() {
               href="#"
               className="text-customMuted hover:text-customAccent transition-colors text-sm font-medium"
             >
-              Privacy Policy
+              {dict?.legal1}
             </a>
           </li>
           <li>
@@ -74,7 +73,7 @@ export default function Footer() {
               href="#"
               className="text-customMuted hover:text-customAccent transition-colors text-sm font-medium"
             >
-              Terms of Service
+              {dict?.legal2}
             </a>
           </li>
           <li>
@@ -82,7 +81,7 @@ export default function Footer() {
               href="#"
               className="text-customMuted hover:text-customAccent transition-colors text-sm font-medium"
             >
-              Compliance
+              {dict?.legal3}
             </a>
           </li>
           <li>
@@ -90,7 +89,7 @@ export default function Footer() {
               href="#"
               className="text-customMuted hover:text-customAccent transition-colors text-sm font-medium"
             >
-              Global Offices
+              {dict?.legal4}
             </a>
           </li>
         </ul>
@@ -99,15 +98,13 @@ export default function Footer() {
       {/* 4. Sütun: Bülten Kaydı */}
       <div>
         <h5 className="text-customText font-mono text-sm uppercase tracking-widest font-bold mb-6">
-          Subscribe
+          {dict?.subscribeTitle}
         </h5>
-        <p className="text-customMuted text-sm mb-4">
-          Receive our monthly maritime market intelligence reports.
-        </p>
+        <p className="text-customMuted text-sm mb-4">{dict?.subscribeDesc}</p>
         <div className="flex gap-2">
           <input
             type="email"
-            placeholder="Email Address"
+            placeholder={dict?.placeholder}
             className="bg-customSurface border border-customBorder text-customText px-4 py-2 w-full focus:outline-none focus:border-customAccent text-sm"
           />
           <button className="bg-customAccent p-2 text-customBg hover:opacity-80 transition-opacity flex items-center justify-center">
@@ -119,7 +116,7 @@ export default function Footer() {
       {/* Alt Bilgi ve Sosyal Medya */}
       <div className="col-span-1 md:col-span-2 lg:col-span-4 pt-8 mt-8 border-t border-customBorder flex flex-col md:flex-row justify-between items-center gap-6">
         <p className="text-customMuted font-mono text-xs uppercase tracking-widest">
-          © 2026 ACUNENGY SHIPPING. ALL RIGHTS RESERVED.
+          {dict?.rights}
         </p>
         <div className="flex gap-6">
           <a

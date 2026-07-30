@@ -3,7 +3,7 @@
 import React, { useState, useRef } from 'react';
 import emailjs from '@emailjs/browser';
 
-export default function Contact() {
+export default function Contact({ dict }) {
   const formRef = useRef();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState(null);
@@ -23,13 +23,13 @@ export default function Contact() {
     e.preventDefault();
     setIsSubmitting(true);
 
-    //EmailJS Key
+    // EmailJS Key
     emailjs
       .sendForm(
-        'service_lcw0fqz', //SERVICE_ID
-        'template_gsq0q5s', //TEMPLATE_ID
+        'service_lcw0fqz', // SERVICE_ID
+        'template_gsq0q5s', // TEMPLATE_ID
         formRef.current,
-        'jQFpGWnhcgr9QoCsM', //PUBLIC_KEY
+        'jQFpGWnhcgr9QoCsM', // PUBLIC_KEY
       )
       .then(
         (result) => {
@@ -68,15 +68,12 @@ export default function Contact() {
         {/* Sol Taraf: İletişim Bilgileri */}
         <div>
           <span className="font-mono text-sm text-customAccent tracking-widest uppercase mb-4 block font-bold">
-            Get in Touch
+            {dict?.badge}
           </span>
           <h2 className="text-4xl md:text-5xl text-customText font-bold mb-8 font-heading">
-            Secure Your Global Supply Chain
+            {dict?.title}
           </h2>
-          <p className="text-customMuted text-lg mb-12">
-            Contact our global coordination team for immediate quotes, vessel
-            tracking, or technical logistics consultations.
-          </p>
+          <p className="text-customMuted text-lg mb-12">{dict?.description}</p>
 
           <div className="space-y-8">
             <div className="flex gap-6 items-start">
@@ -85,7 +82,7 @@ export default function Contact() {
               </span>
               <div>
                 <p className="font-mono text-sm text-customMuted uppercase font-bold">
-                  Emergency Support (24/7)
+                  {dict?.emergency}
                 </p>
                 <p className="text-customText text-xl font-bold font-mono mt-1">
                   +90 532 XXX XX XX
@@ -99,7 +96,7 @@ export default function Contact() {
               </span>
               <div>
                 <p className="font-mono text-sm text-customMuted uppercase font-bold">
-                  General Inquiries
+                  {dict?.general}
                 </p>
                 <p className="text-customText text-xl font-bold font-mono mt-1">
                   shipping@acunengy.com
@@ -113,7 +110,7 @@ export default function Contact() {
               </span>
               <div>
                 <p className="font-mono text-sm text-customMuted uppercase font-bold">
-                  Main Hub Office
+                  {dict?.office}
                 </p>
                 <p className="text-customText text-base font-medium mt-1 leading-relaxed">
                   Plaza Cubes Office Solutions, Mistral Tower, Konak / İzmir,
@@ -127,8 +124,8 @@ export default function Contact() {
                 href="#"
                 className="inline-flex items-center gap-3 bg-[#25D366] text-white px-8 py-3 font-mono text-sm uppercase tracking-widest hover:opacity-90 transition-all font-bold rounded-sm shadow-md hover:shadow-lg"
               >
-                <span className="material-symbols-outlined">chat</span> WhatsApp
-                Support
+                <span className="material-symbols-outlined">chat</span>{' '}
+                {dict?.whatsapp}
               </a>
             </div>
           </div>
@@ -140,7 +137,7 @@ export default function Contact() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <label className="font-mono text-xs text-customMuted uppercase font-bold">
-                  Full Name
+                  {dict?.formName}
                 </label>
                 <input
                   type="text"
@@ -153,7 +150,7 @@ export default function Contact() {
               </div>
               <div className="space-y-2">
                 <label className="font-mono text-xs text-customMuted uppercase font-bold">
-                  Email Address
+                  {dict?.formEmail}
                 </label>
                 <input
                   type="email"
@@ -168,7 +165,7 @@ export default function Contact() {
 
             <div className="space-y-2">
               <label className="font-mono text-xs text-customMuted uppercase font-bold">
-                Service Required
+                {dict?.formService}
               </label>
               <select
                 name="user_service"
@@ -189,7 +186,7 @@ export default function Contact() {
 
             <div className="space-y-2">
               <label className="font-mono text-xs text-customMuted uppercase font-bold">
-                Message
+                {dict?.formMessage}
               </label>
               <textarea
                 name="message"
@@ -207,18 +204,18 @@ export default function Contact() {
               className={`w-full text-customBg py-4 font-mono text-sm uppercase tracking-widest transition-all font-bold mt-4 flex justify-center items-center gap-2
                 ${isSubmitting ? 'bg-customMuted cursor-not-allowed' : 'bg-customAccent hover:opacity-80'}`}
             >
-              {isSubmitting ? 'SENDING...' : 'SEND INQUIRY'}
+              {isSubmitting ? dict?.btnSending : dict?.btnSend}
             </button>
 
             {/* Bildirim Mesajları */}
             {submitStatus === 'success' && (
               <p className="text-green-500 text-sm font-bold text-center mt-4">
-                Mesajınız başarıyla gönderildi!
+                {dict?.msgSuccess}
               </p>
             )}
             {submitStatus === 'error' && (
               <p className="text-red-500 text-sm font-bold text-center mt-4">
-                Bir hata oluştu. Lütfen tekrar deneyin.
+                {dict?.msgError}
               </p>
             )}
           </form>

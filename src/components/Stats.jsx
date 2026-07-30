@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function Stats() {
+export default function Stats({ dict }) {
   return (
     <section className="py-16 md:py-20 bg-[#000d21] text-white border-y border-customBorder">
       <div className="px-4 md:px-8 lg:px-16 grid grid-cols-2 md:grid-cols-4 gap-y-10 text-center md:divide-x md:divide-white/10">
@@ -9,7 +9,7 @@ export default function Stats() {
             50+
           </div>
           <div className="font-mono text-[10px] lg:text-xs uppercase tracking-widest text-white/60">
-            Countries Served
+            {dict?.stat1Label || 'Countries Served'}
           </div>
         </div>
 
@@ -18,7 +18,7 @@ export default function Stats() {
             200+
           </div>
           <div className="font-mono text-[10px] lg:text-xs uppercase tracking-widest text-white/60">
-            Ports Covered
+            {dict?.stat2Label || 'Ports Covered'}
           </div>
         </div>
 
@@ -27,7 +27,7 @@ export default function Stats() {
             1500+
           </div>
           <div className="font-mono text-[10px] lg:text-xs uppercase tracking-widest text-white/60">
-            Projects Done
+            {dict?.stat3Label || 'Projects Done'}
           </div>
         </div>
 
@@ -36,7 +36,7 @@ export default function Stats() {
             24/7
           </div>
           <div className="font-mono text-[10px] lg:text-xs uppercase tracking-widest text-white/60">
-            Global Presence
+            {dict?.stat4Label || 'Global Presence'}
           </div>
         </div>
       </div>

@@ -1,70 +1,94 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import ThemeToggle from './ThemeToggle';
-import Link from 'next/link';
+import React, { useEffect, useState } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
+import { useTheme } from 'next-themes';
 
-export default function Navbar() {
-  const [isScrolled, setIsScrolled] = useState(false);
+export default function Navbar({ dict }) {
+  const pathname = usePathname();
+  const router = useRouter();
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    setMounted(true);
   }, []);
 
+  const currentLocale = pathname?.split('/')[1] || 'en';
+  const targetLocale = currentLocale === 'en' ? 'tr' : 'en';
+
+  const switchLanguage = () => {
+    if (!pathname) return;
+    const segments = pathname.split('/');
+    segments[1] = targetLocale;
+    router.push(segments.join('/'));
+  };
+
   return (
-    <nav
-      className={`fixed top-0 w-full z-50 flex justify-between items-center px-6 md:px-16 py-4 transition-all duration-300 border-b border-customBorder ${
-        isScrolled
-          ? 'bg-customBg shadow-md py-3'
-          : 'bg-customBg/70 backdrop-blur-md'
-      }`}
-    >
-      {/* Logo */}
-      <Link
-        href="/"
-        className="text-xl md:text-2xl text-customText tracking-tighter font-bold"
-      >
-        ACUNENGY SHIPPING
-      </Link>
+    <nav className="fixed w-full z-50 top-0 left-0 bg-customBg/85 backdrop-blur-md border-b border-customBorder transition-colors duration-300">
+      <div className="max-w-7xl mx-auto px-6 md:px-16 py-4 flex justify-between items-center">
+        {/* Logo */}
+        <div className="text-2xl text-customText font-bold tracking-tighter">
+          ACUNENGY
+        </div>
 
-      {/* Menü Linkleri*/}
-      <div className="hidden md:flex gap-8 items-center">
-        <Link
-          href="#"
-          className="text-sm uppercase tracking-wider text-customAccent border-b-2 border-customAccent pb-1 font-medium"
-        >
-          Hizmetler
-        </Link>
-        <Link
-          href="#"
-          className="text-sm uppercase tracking-wider text-customText hover:text-customAccent transition-colors"
-        >
-          Sektörler
-        </Link>
-        <Link
-          href="#"
-          className="text-sm uppercase tracking-wider text-customText hover:text-customAccent transition-colors"
-        >
-          Ağımız
-        </Link>
-        <Link
-          href="#"
-          className="text-sm uppercase tracking-wider text-customText hover:text-customAccent transition-colors"
-        >
-          Filo
-        </Link>
-      </div>
+        {/* Menü Linkleri */}
+        <div className="hidden md:flex items-center gap-8">
+          <a
+            href="#"
+            className="text-customMuted hover:text-customAccent font-mono text-sm font-bold uppercase tracking-widest transition-colors"
+          >
+            {dict?.about || 'About'}
+          </a>
+          <a
+            href="#"
+            className="text-customMuted hover:text-customAccent font-mono text-sm font-bold uppercase tracking-widest transition-colors"
+          >
+            {dict?.services || 'Services'}
+          </a>
+          <a
+            href="#"
+            className="text-customMuted hover:text-customAccent font-mono text-sm font-bold uppercase tracking-widest transition-colors"
+          >
+            {dict?.industries || 'Industries'}
+          </a>
+          <a
+            href="#"
+            className="text-customMuted hover:text-customAccent font-mono text-sm font-bold uppercase tracking-widest transition-colors"
+          >
+            {dict?.contact || 'Contact'}
+          </a>
+        </div>
 
-      {/* Sağ Taraf: Tema Butonu ve İletişim */}
-      <div className="flex items-center gap-4 md:gap-6">
-        <ThemeToggle />
-        <button className="hidden md:block bg-customAccent text-customBg text-sm font-bold px-6 py-2 uppercase tracking-widest hover:opacity-80 transition-all scale-95 active:scale-90 rounded-sm">
-          İletişim
-        </button>
+        {/* Sağ Taraf: Tema Değiştirici ve Dil Değiştirici */}
+        <div className="flex items-center gap-4">
+          {/* Light/Dark Mode Butonu */}
+          {mounted && (
+            <button
+              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              className="p-2.5 rounded-sm border border-customBorder bg-customSurface text-customText hover:border-customAccent transition-all flex items-center justify-center group"
+              aria-label="Toggle Theme"
+            >
+              <span className="material-symbols-outlined text-lg group-hover:rotate-45 transition-transform duration-300">
+                {theme === 'dark' ? 'light_mode' : 'dark_mode'}
+              </span>
+            </button>
+          )}
+
+          {/* Çeviri İkonlu ve Hover'da Açılan Dil Değiştirici */}
+          <button
+            onClick={switchLanguage}
+            className="hidden md:flex items-center p-2.5 rounded-sm border border-customBorder bg-customSurface text-customText hover:border-customAccent transition-all duration-300 group overflow-hidden"
+            title="Switch Language"
+          >
+            <span className=" px-2 material-symbols-outlined text-lg text-customAccent group-hover:text-customText transition-colors">
+              translate
+            </span>
+            <span className="font-mono text-xs uppercase tracking-widest font-bold max-w-0 opacity-0 group-hover:max-w-[100px] group-hover:opacity-100 transition-all duration-500 ease-in-out whitespace-nowrap">
+              {currentLocale === 'en' ? 'TÜRKÇE' : 'ENGLISH'}
+            </span>
+          </button>
+        </div>
       </div>
     </nav>
   );

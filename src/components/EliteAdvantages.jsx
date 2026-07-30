@@ -1,34 +1,30 @@
 import React from 'react';
 
-const advantages = [
-  {
-    icon: 'schedule',
-    title: '24/7 Global Ops',
-    description:
-      'Our round-the-clock coordination centers ensure your cargo never stops moving, regardless of time zones.',
-  },
-  {
-    icon: 'speed',
-    title: 'Rapid Response',
-    description:
-      'How ACUNENGY SHIPPING is leading the transition to low-carbon port operations and sustainable shipping practices.',
-  },
-  {
-    icon: 'verified_user',
-    title: 'Safety Architecture',
-    description:
-      'Zero-compromise safety protocols embedded into every lift and every transit across our entire network.',
-  },
-];
+export default function EliteAdvantage({ dict }) {
+  const advantages = [
+    {
+      icon: 'schedule',
+      title: dict?.adv1Title,
+      description: dict?.adv1Desc,
+    },
+    {
+      icon: 'speed',
+      title: dict?.adv2Title,
+      description: dict?.adv2Desc,
+    },
+    {
+      icon: 'verified_user',
+      title: dict?.adv3Title,
+      description: dict?.adv3Desc,
+    },
+  ];
 
-export default function EliteAdvantage() {
   return (
     <section className="py-24 overflow-hidden bg-customBg border-t border-customBorder">
       <div className="px-6 md:px-16 grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
         {/* Sol Taraf: Asimetrik Görsel Izgarası */}
         <div className="order-2 lg:order-1">
           <div className="grid grid-cols-2 gap-4">
-            {/* 1. Sütun (Normal hizalı) */}
             <div className="space-y-4">
               <div className="aspect-square bg-customCard overflow-hidden rounded-sm border border-customBorder">
                 <img
@@ -46,7 +42,6 @@ export default function EliteAdvantage() {
               </div>
             </div>
 
-            {/* 2. Sütun (Yukarıdan boşluklu, asimetrik görünüm için pt-12) */}
             <div className="space-y-4 pt-12">
               <div className="aspect-[4/5] bg-customCard overflow-hidden rounded-sm border border-customBorder">
                 <img
@@ -69,10 +64,10 @@ export default function EliteAdvantage() {
         {/* Sağ Taraf: Metin ve Avantajlar */}
         <div className="order-1 lg:order-2">
           <span className="font-mono text-sm text-customAccent tracking-widest uppercase mb-4 block font-bold">
-            The Elite Advantage
+            {dict?.badge}
           </span>
           <h2 className="text-4xl md:text-5xl text-customText font-bold mb-12 leading-tight font-heading">
-            Engineering Global <br className="hidden md:block" /> Reliability
+            {dict?.title1} <br className="hidden md:block" /> {dict?.title2}
           </h2>
 
           <div className="space-y-10">
