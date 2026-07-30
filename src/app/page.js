@@ -1,5 +1,7 @@
 import About from '@/components/About';
+import Contact from '@/components/Contact';
 import EliteAdvantage from '@/components/EliteAdvantages';
+import Footer from '@/components/Footer';
 import Hero from '@/components/Hero';
 import Industries from '@/components/Industries';
 import Insights from '@/components/Insgihts';
@@ -16,6 +18,8 @@ export default function Home() {
       <Industries />
       <EliteAdvantage />
       <Insights />
+      <Contact />
+      <Footer />
     </main>
   );
 }
