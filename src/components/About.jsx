@@ -46,29 +46,31 @@ export default function About() {
         </div>
       </div>
 
-      {/* Sağ Taraf: Harita / Görsel Alanı */}
-      <div className="relative h-[500px] bg-customCard rounded-lg overflow-hidden group border border-customBorder shadow-lg">
-        <div className="w-full h-full opacity-90 transition-transform duration-700 group-hover:scale-105">
-          {/* Üstteki Karartma ve İkon */}
-          <div className="absolute inset-0 flex items-center justify-center z-10 bg-black/30 group-hover:bg-black/10 transition-colors duration-500">
-            <div className="text-center">
-              <span className="material-symbols-outlined text-customAccent text-6xl mb-4 drop-shadow-lg">
-                public
-              </span>
-              <p className="font-mono text-sm text-white tracking-widest uppercase bg-black/60 px-4 py-2 rounded-md backdrop-blur-md border border-white/10">
-                Interactive Network Map
-              </p>
-            </div>
-          </div>
-          {/* Arka Plan Görseli */}
-          <div
-            className="w-full h-full bg-cover bg-center"
-            style={{
-              backgroundImage:
-                "url('https://lh3.googleusercontent.com/aida-public/AB6AXuD2Ku1L3VUQHoelL2fKUdURADfffHymeTpVfNujcQP9yNaLyAFhzuwA8xvUizMfdoBqJX5-tmgzmpOqHIVvi5EJ09O1Ys9aJ8VzmUzBpJhYRAB69OqCyvyfCsjeqvwo81kNRNDvFBD32MJCcdXnd5NOMC6Xk_eYUtv064S8NvnzDiDXDbxplPxFlNZ68J97_yK9JmTe2K8p7NeYdQw6vb3gZ_TshhE4VSBE9Tio4DLkWNIw7mYzgXsz')",
-            }}
-          ></div>
+      {/* Sağ Taraf: Canlı AIS Haritası */}
+      <div className="relative h-[500px] bg-customCard rounded-lg overflow-hidden border border-customBorder shadow-lg">
+        {/* Sol Üst "Canlı" Rozeti */}
+        <div className="absolute top-4 left-4 z-20 bg-customBg/80 backdrop-blur-md border border-customBorder px-3 py-1.5 rounded-md flex items-center gap-2 shadow-md pointer-events-none">
+          <span className="relative flex h-3 w-3">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-3 w-3 bg-red-600"></span>
+          </span>
+          <span className="font-mono text-xs uppercase tracking-widest text-customText font-bold">
+            Live AIS Map
+          </span>
         </div>
+
+        {/* VesselFinder Canlı Harita İframe'i */}
+        {/* lat=38.42 & lon=27.14 (İzmir koordinatları) zoom=6 ile Ege Bölgesi merkez alındı */}
+        <iframe
+          name="vesselfinder"
+          id="vesselfinder"
+          width="100%"
+          height="100%"
+          frameBorder="0"
+          title="Live Vessel Tracking"
+          className="absolute inset-0 z-10"
+          src="https://www.vesselfinder.com/aismap?zoom=6&lat=38.42&lon=27.14&width=100%25&height=100%25&names=false&track=true&fleet=false&fleet_name=false&fleet_hide_old_positions=false&clicktoact=false&default_maptype=1&cursor=hidden"
+        ></iframe>
       </div>
     </section>
   );
