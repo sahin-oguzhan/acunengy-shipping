@@ -1,9 +1,59 @@
-import React from 'react';
+'use client';
+
+import React, { useState, useRef } from 'react';
+import emailjs from '@emailjs/browser';
 
 export default function Contact() {
+  const formRef = useRef();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState(null);
+
+  const [formData, setFormData] = useState({
+    user_name: '',
+    user_email: '',
+    user_service: '',
+    message: '',
+  });
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const sendEmail = (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    //EmailJS Key
+    emailjs
+      .sendForm(
+        'service_lcw0fqz', //SERVICE_ID
+        'template_gsq0q5s', //TEMPLATE_ID
+        formRef.current,
+        'jQFpGWnhcgr9QoCsM', //PUBLIC_KEY
+      )
+      .then(
+        (result) => {
+          setSubmitStatus('success');
+          setIsSubmitting(false);
+          setFormData({
+            user_name: '',
+            user_email: '',
+            user_service: '',
+            message: '',
+          });
+
+          setTimeout(() => setSubmitStatus(null), 3000);
+        },
+        (error) => {
+          setSubmitStatus('error');
+          setIsSubmitting(false);
+          console.log(error.text);
+        },
+      );
+  };
+
   return (
     <section className="relative py-24 overflow-hidden bg-customBg border-t border-customBorder">
-      {/* Arka Plan Haritası (Sadece görsel bir doku katar) */}
       <div className="absolute inset-0 opacity-10 pointer-events-none">
         <div
           className="w-full h-full bg-cover bg-center"
@@ -86,7 +136,7 @@ export default function Contact() {
 
         {/* Sağ Taraf: İletişim Formu */}
         <div className="bg-customSurface/80 backdrop-blur-md p-8 md:p-10 border border-customBorder rounded-sm shadow-xl relative z-10">
-          <form className="space-y-6">
+          <form ref={formRef} onSubmit={sendEmail} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <label className="font-mono text-xs text-customMuted uppercase font-bold">
@@ -94,6 +144,10 @@ export default function Contact() {
                 </label>
                 <input
                   type="text"
+                  name="user_name"
+                  required
+                  value={formData.user_name}
+                  onChange={handleChange}
                   className="w-full bg-customBg border-b border-customBorder text-customText p-3 focus:border-customAccent focus:outline-none transition-colors"
                 />
               </div>
@@ -103,6 +157,10 @@ export default function Contact() {
                 </label>
                 <input
                   type="email"
+                  name="user_email"
+                  required
+                  value={formData.user_email}
+                  onChange={handleChange}
                   className="w-full bg-customBg border-b border-customBorder text-customText p-3 focus:border-customAccent focus:outline-none transition-colors"
                 />
               </div>
@@ -112,14 +170,20 @@ export default function Contact() {
               <label className="font-mono text-xs text-customMuted uppercase font-bold">
                 Service Required
               </label>
-              <select className="w-full bg-customBg border-b border-customBorder text-customText p-3 focus:border-customAccent focus:outline-none transition-colors appearance-none cursor-pointer">
-                <option className="bg-customSurface">
+              <select
+                name="user_service"
+                required
+                value={formData.user_service}
+                onChange={handleChange}
+                className="w-full bg-customBg border-b border-customBorder text-customText p-3 focus:border-customAccent focus:outline-none transition-colors appearance-none cursor-pointer"
+              >
+                <option value="" disabled>
                   Select a Service...
                 </option>
-                <option className="bg-customSurface">Ship Agency</option>
-                <option className="bg-customSurface">Project Cargo</option>
-                <option className="bg-customSurface">Heavy Lift</option>
-                <option className="bg-customSurface">Offshore Support</option>
+                <option value="Ship Agency">Ship Agency</option>
+                <option value="Project Cargo">Project Cargo</option>
+                <option value="Heavy Lift">Heavy Lift</option>
+                <option value="Offshore Support">Offshore Support</option>
               </select>
             </div>
 
@@ -128,17 +192,35 @@ export default function Contact() {
                 Message
               </label>
               <textarea
+                name="message"
+                required
+                value={formData.message}
+                onChange={handleChange}
                 className="w-full bg-customBg border-b border-customBorder text-customText p-3 focus:border-customAccent focus:outline-none transition-colors resize-none"
                 rows="4"
               ></textarea>
             </div>
 
             <button
-              type="button"
-              className="w-full bg-customAccent text-customBg py-4 font-mono text-sm uppercase tracking-widest hover:opacity-80 transition-all font-bold mt-4"
+              type="submit"
+              disabled={isSubmitting}
+              className={`w-full text-customBg py-4 font-mono text-sm uppercase tracking-widest transition-all font-bold mt-4 flex justify-center items-center gap-2
+                ${isSubmitting ? 'bg-customMuted cursor-not-allowed' : 'bg-customAccent hover:opacity-80'}`}
             >
-              SEND INQUIRY
+              {isSubmitting ? 'SENDING...' : 'SEND INQUIRY'}
             </button>
+
+            {/* Bildirim Mesajları */}
+            {submitStatus === 'success' && (
+              <p className="text-green-500 text-sm font-bold text-center mt-4">
+                Mesajınız başarıyla gönderildi!
+              </p>
+            )}
+            {submitStatus === 'error' && (
+              <p className="text-red-500 text-sm font-bold text-center mt-4">
+                Bir hata oluştu. Lütfen tekrar deneyin.
+              </p>
+            )}
           </form>
         </div>
       </div>
