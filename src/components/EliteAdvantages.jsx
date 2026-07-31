@@ -20,7 +20,7 @@ export default function EliteAdvantage({ dict }) {
   ];
 
   return (
-    <section className="py-24 overflow-hidden bg-customBg border-t border-customBorder">
+    <section className="py-24 overflow-hidden bg-cyan-50 border-t border-customBorder">
       <div className="px-6 md:px-16 grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
         {/* Sol Taraf: Asimetrik Görsel Izgarası */}
         <div className="order-2 lg:order-1">

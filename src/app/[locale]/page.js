@@ -9,9 +9,7 @@ import Contact from '@/components/Contact';
 import Footer from '@/components/Footer';
 import { getDictionary } from '@/dictionaries/getDictionary';
 
-// params bütün olarak alınıyor
 export default async function Home({ params }) {
-  // Promise çözümleniyor
   const resolvedParams = await params;
   const locale = resolvedParams.locale;
 

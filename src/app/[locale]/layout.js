@@ -16,13 +16,10 @@ export const metadata = {
     'Ship Agency, Project Cargo, Heavy Lift Logistics, Port Operations',
 };
 
-// 1. DİKKAT: params parametresini direkt parçalamıyoruz, bütün olarak alıyoruz.
 export default async function RootLayout({ children, params }) {
-  // 2. DİKKAT: params artık bir Promise olduğu için await ile çözümlüyoruz.
   const resolvedParams = await params;
   const locale = resolvedParams.locale;
 
-  // Aktif dile göre sözlüğü getir
   const dict = await getDictionary(locale);
 
   return (

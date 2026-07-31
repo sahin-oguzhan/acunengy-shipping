@@ -36,25 +36,25 @@ export default function Navbar({ dict }) {
         <div className="hidden md:flex items-center gap-8">
           <a
             href="#"
-            className="text-customMuted hover:text-customAccent font-mono text-sm font-bold uppercase tracking-widest transition-colors"
+            className="text-customMuted hover:text-customAccent font-inter text-sm font-bold uppercase tracking-widest transition-colors"
           >
             {dict?.about || 'About'}
           </a>
           <a
             href="#"
-            className="text-customMuted hover:text-customAccent font-mono text-sm font-bold uppercase tracking-widest transition-colors"
+            className="text-customMuted hover:text-customAccent font-inter text-sm font-bold uppercase tracking-widest transition-colors"
           >
             {dict?.services || 'Services'}
           </a>
           <a
             href="#"
-            className="text-customMuted hover:text-customAccent font-mono text-sm font-bold uppercase tracking-widest transition-colors"
+            className="text-customMuted hover:text-customAccent font-inter text-sm font-bold uppercase tracking-widest transition-colors"
           >
             {dict?.industries || 'Industries'}
           </a>
           <a
             href="#"
-            className="text-customMuted hover:text-customAccent font-mono text-sm font-bold uppercase tracking-widest transition-colors"
+            className="hover:border-b-2 text-customMuted hover:text-customAccent font-inter text-sm font-bold uppercase tracking-widest transition-colors"
           >
             {dict?.contact || 'Contact'}
           </a>
@@ -84,7 +84,7 @@ export default function Navbar({ dict }) {
             <span className=" px-2 material-symbols-outlined text-lg text-customAccent group-hover:text-customText transition-colors">
               translate
             </span>
-            <span className="font-mono text-xs uppercase tracking-widest font-bold max-w-0 opacity-0 group-hover:max-w-[100px] group-hover:opacity-100 transition-all duration-500 ease-in-out whitespace-nowrap">
+            <span className="font-inter text-xs uppercase tracking-widest font-bold max-w-0 opacity-0 group-hover:max-w-[100px] group-hover:opacity-100 transition-all duration-500 ease-in-out whitespace-nowrap">
               {currentLocale === 'en' ? 'TÜRKÇE' : 'ENGLISH'}
             </span>
           </button>
