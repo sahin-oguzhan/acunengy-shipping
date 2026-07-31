@@ -70,6 +70,13 @@ export async function getHomePageData(locale = 'en') {
             desc: acf.service_6_desc,
           },
         ],
+        // Stats
+        statsList: [
+          { value: acf.stat_1_value, label: acf.stat_1_label },
+          { value: acf.stat_2_value, label: acf.stat_2_label },
+          { value: acf.stat_3_value, label: acf.stat_3_label },
+          { value: acf.stat_4_value, label: acf.stat_4_label },
+        ],
       };
     }
     return null;
