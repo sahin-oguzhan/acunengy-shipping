@@ -1,6 +1,16 @@
 import React from 'react';
+import { getHomePageData } from '@/lib/api';
 
-export default function Hero({ dict }) {
+export default async function Hero({ dict, locale }) {
+  const wpData = await getHomePageData(locale);
+
+  const displaySubtitle = wpData?.heroBadge || dict.subtitle;
+  const displayTitle1 = wpData?.heroTitle || dict.title1;
+  const displayTitle2 = wpData?.heroTitle2 || dict.title2;
+  const displayDescription = wpData?.heroSubtitle || dict.description;
+  const displayBtnQuote = wpData?.heroBtnQuote || dict.btnQuote;
+  const displayBtnServices = wpData?.heroBtnServices || dict.btnServices;
+
   return (
     <header className="relative h-screen w-full flex items-center overflow-hidden mt-[-96px]">
       <div className="absolute inset-0 z-0">
@@ -15,24 +25,24 @@ export default function Hero({ dict }) {
       <div className="relative z-20 px-6 md:px-16 max-w-5xl mt-24">
         <div className="bg-customBg/70 backdrop-blur-md p-10 md:p-16 border-l-4 border-l-customAccent border border-customBorder shadow-xl">
           <p className="font-mono text-xs md:text-sm text-customAccent mb-4 tracking-[0.3em] uppercase">
-            {dict.subtitle}
+            {displaySubtitle}
           </p>
 
           <h1 className="text-4xl md:text-5xl lg:text-6xl text-customText mb-6 leading-tight font-bold tracking-tighter">
-            {dict.title1} <br />
-            <span className="text-customAccent">{dict.title2}</span>
+            {displayTitle1} <br />
+            <span className="text-customAccent">{displayTitle2}</span>
           </h1>
 
           <p className="text-base md:text-lg text-customMuted mb-10 max-w-2xl border-l border-customBorder pl-6">
-            {dict.description}
+            {displayDescription}
           </p>
 
           <div className="flex flex-col md:flex-row gap-4">
             <button className="bg-customAccent text-customBg px-10 py-4 font-mono text-sm uppercase tracking-widest hover:opacity-80 transition-all font-bold">
-              {dict.btnQuote}
+              {displayBtnQuote}
             </button>
             <button className="border border-customBorder text-customText px-10 py-4 font-mono text-sm uppercase tracking-widest hover:bg-customSurface transition-all font-bold backdrop-blur-md">
-              {dict.btnServices}
+              {displayBtnServices}
             </button>
           </div>
         </div>
