@@ -1,5 +1,7 @@
 import React from 'react';
 import { getHomePageData } from '@/lib/api';
+import AnimatedCounter from '@/components/AnimatedCounter';
+import FadeIn from '@/components/FadeIn';
 
 export default async function Stats({ dict, locale }) {
   const wpData = await getHomePageData(locale);
@@ -13,7 +15,7 @@ export default async function Stats({ dict, locale }) {
       item.label.trim() !== '',
   );
 
-  // 2. YEDEK LİSTE: WP'den hiç veri doldurulmadıysa senin orijinal değerlerin devreye girer
+  // 2. YEDEK LİSTE
   const fallbackStats = [
     { value: '50+', label: dict?.stat1Label || 'Countries Served' },
     { value: '200+', label: dict?.stat2Label || 'Ports Covered' },
@@ -21,10 +23,8 @@ export default async function Stats({ dict, locale }) {
     { value: '24/7', label: dict?.stat4Label || 'Global Presence' },
   ];
 
-  // Eğer WP'de en az 1 tane bile doldurulmuş metrik varsa onu kullan, yoksa yedeğe düş
   const finalStats = wpStats.length > 0 ? wpStats : fallbackStats;
 
-  // Izgara (Grid) sütun sayısını dinamik ayarlama (Örn: 2 metrik varsa 2 sütun, 4 ise 4 sütun)
   const gridColsClass =
     finalStats.length === 2
       ? 'md:grid-cols-2'
@@ -33,21 +33,23 @@ export default async function Stats({ dict, locale }) {
         : 'md:grid-cols-4';
 
   return (
-    <section className="py-16 md:py-20 bg-[#000d21] text-white border-y border-customBorder">
+    <section className="py-16 md:py-20 bg-customBg text-customText border-y border-customBorder">
       <div
-        className={`px-4 md:px-8 lg:px-16 grid grid-cols-2 ${gridColsClass} gap-y-10 text-center md:divide-x md:divide-white/10`}
+        className={`px-4 md:px-8 lg:px-16 grid grid-cols-2 ${gridColsClass} gap-y-10 text-center md:divide-x md:divide-customBorder`}
       >
         {finalStats.map((stat, index) => (
-          <div key={index} className="px-2 md:px-4 lg:px-8">
-            {/* Metrik Sayı */}
-            <div className="text-4xl lg:text-5xl text-customAccent mb-2 font-heading font-bold">
-              {stat.value}
+          <FadeIn key={index} delay={index * 0.15} direction="up">
+            <div className="px-2 md:px-4 lg:px-8">
+              {/* Metrik Sayı */}
+              <div className="text-4xl lg:text-5xl text-customAccent mb-2 font-heading font-bold tracking-tight">
+                <AnimatedCounter value={stat.value} />
+              </div>
+              {/* Metrik Etiket */}
+              <div className="font-mono text-[10px] lg:text-xs uppercase tracking-widest text-customMuted font-medium">
+                {stat.label}
+              </div>
             </div>
-            {/* Metrik Etiket */}
-            <div className="font-mono text-[10px] lg:text-xs uppercase tracking-widest text-white/60">
-              {stat.label}
-            </div>
-          </div>
+          </FadeIn>
         ))}
       </div>
     </section>

@@ -1,20 +1,25 @@
-import { Inter, Montserrat } from 'next/font/google';
+import { IBM_Plex_Sans, Space_Grotesk } from 'next/font/google';
 import '../globals.css';
 import { ThemeProvider } from '@/components/ThemeProvider';
 import Navbar from '@/components/Navbar';
 import { getDictionary } from '@/dictionaries/getDictionary';
 import { getHomePageData } from '@/lib/api';
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
-const montserrat = Montserrat({
+const ibmPlex = IBM_Plex_Sans({
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700'],
+  variable: '--font-sans',
+});
+
+const spaceGrotesk = Space_Grotesk({
   subsets: ['latin'],
   variable: '--font-heading',
 });
 
 export const metadata = {
-  title: 'ACUNENGY SHIPPING | Global গোলা Logistics Excellence',
+  title: 'ACUNENGY SHIPPING | Global Maritime Solutions',
   description:
-    'Ship Agency, Project Cargo, Heavy Lift Logistics, Port Operations',
+    'Global Maritime Logistics, Ship Agency, & Heavy Lift Excellence',
 };
 
 export default async function RootLayout({ children, params }) {
@@ -33,7 +38,7 @@ export default async function RootLayout({ children, params }) {
         />
       </head>
       <body
-        className={`${inter.variable} ${montserrat.variable} font-sans antialiased min-h-screen flex flex-col pt-24`}
+        className={`${ibmPlex.variable} ${spaceGrotesk.variable} font-sans antialiased min-h-screen flex flex-col pt-24`}
       >
         <ThemeProvider>
           <Navbar dict={dict.navbar} wpData={wpData} />

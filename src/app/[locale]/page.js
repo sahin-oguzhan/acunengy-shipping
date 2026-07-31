@@ -9,6 +9,8 @@ import Contact from '@/components/Contact';
 import Footer from '@/components/Footer';
 import { getDictionary } from '@/dictionaries/getDictionary';
 import { getHomePageData } from '@/lib/api';
+import EmergencyWidget from '@/components/EmergencyWidget';
+import Specializations from '@/components/Specializations';
 
 export default async function Home({ params }) {
   const resolvedParams = await params;
@@ -23,10 +25,12 @@ export default async function Home({ params }) {
       <About dict={dict.about} locale={locale} />
       <Stats dict={dict.stats} locale={locale} />
       <Services dict={dict.services} locale={locale} />
+      <Specializations />
       <Industries dict={dict.industries} locale={locale} />
       <EliteAdvantage dict={dict.eliteAdvantage} locale={locale} />
       <Insights dict={dict.insights} locale={locale} />
       <Contact dict={dict.contact} wpData={wpData} />
+      <EmergencyWidget />
       <Footer dict={dict.footer} wpData={wpData} />
     </main>
   );
