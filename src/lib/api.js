@@ -120,6 +120,14 @@ export async function getHomePageData(locale = 'en') {
         insightsBadge: acf.insights_badge,
         insightsTitle: acf.insights_title,
         insightsDesc: acf.insights_desc,
+        //Contact
+        contactBadge: acf.contact_badge,
+        contactTitle: acf.contact_title,
+        contactDesc: acf.contact_desc,
+        contactPhone: acf.contact_phone,
+        contactEmail: acf.contact_email,
+        contactAddress: acf.contact_address,
+        contactWhatsapp: acf.contact_whatsapp,
       };
     }
     return null;

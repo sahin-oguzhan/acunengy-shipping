@@ -3,7 +3,7 @@
 import React, { useState, useRef } from 'react';
 import emailjs from '@emailjs/browser';
 
-export default function Contact({ dict }) {
+export default function Contact({ dict, wpData }) {
   const formRef = useRef();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState(null);
@@ -14,6 +14,18 @@ export default function Contact({ dict }) {
     user_service: '',
     message: '',
   });
+
+  // Dinamik Metinler ve İletişim Bilgileri (WP ACF -> Dict/Fallback)
+  const displayBadge = wpData?.contactBadge || dict?.badge || 'CONTACT US';
+  const displayTitle = wpData?.contactTitle || dict?.title || 'Get in Touch';
+  const displayDesc = wpData?.contactDesc || dict?.description;
+
+  const displayPhone = wpData?.contactPhone || '+90 532 XXX XX XX';
+  const displayEmail = wpData?.contactEmail || 'shipping@acunengy.com';
+  const displayAddress =
+    wpData?.contactAddress ||
+    'Plaza Cubes Office Solutions, Mistral Tower, Konak / İzmir, Türkiye';
+  const whatsappUrl = wpData?.contactWhatsapp || '#';
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -68,12 +80,12 @@ export default function Contact({ dict }) {
         {/* Sol Taraf: İletişim Bilgileri */}
         <div>
           <span className="font-mono text-sm text-customAccent tracking-widest uppercase mb-4 block font-bold">
-            {dict?.badge}
+            {displayBadge}
           </span>
           <h2 className="text-4xl md:text-5xl text-customText font-bold mb-8 font-heading">
-            {dict?.title}
+            {displayTitle}
           </h2>
-          <p className="text-customMuted text-lg mb-12">{dict?.description}</p>
+          <p className="text-customMuted text-lg mb-12">{displayDesc}</p>
 
           <div className="space-y-8">
             <div className="flex gap-6 items-start">
@@ -85,7 +97,7 @@ export default function Contact({ dict }) {
                   {dict?.emergency}
                 </p>
                 <p className="text-customText text-xl font-bold font-mono mt-1">
-                  +90 532 XXX XX XX
+                  {displayPhone}
                 </p>
               </div>
             </div>
@@ -99,7 +111,7 @@ export default function Contact({ dict }) {
                   {dict?.general}
                 </p>
                 <p className="text-customText text-xl font-bold font-mono mt-1">
-                  shipping@acunengy.com
+                  {displayEmail}
                 </p>
               </div>
             </div>
@@ -113,15 +125,16 @@ export default function Contact({ dict }) {
                   {dict?.office}
                 </p>
                 <p className="text-customText text-base font-medium mt-1 leading-relaxed">
-                  Plaza Cubes Office Solutions, Mistral Tower, Konak / İzmir,
-                  Türkiye
+                  {displayAddress}
                 </p>
               </div>
             </div>
 
             <div className="pt-6">
               <a
-                href="#"
+                href={whatsappUrl}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="inline-flex items-center gap-3 bg-[#25D366] text-white px-8 py-3 font-mono text-sm uppercase tracking-widest hover:opacity-90 transition-all font-bold rounded-sm shadow-md hover:shadow-lg"
               >
                 <span className="material-symbols-outlined">chat</span>{' '}

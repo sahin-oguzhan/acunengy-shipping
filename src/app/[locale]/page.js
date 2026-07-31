@@ -8,12 +8,14 @@ import Insights from '@/components/Insights';
 import Contact from '@/components/Contact';
 import Footer from '@/components/Footer';
 import { getDictionary } from '@/dictionaries/getDictionary';
+import { getHomePageData } from '@/lib/api';
 
 export default async function Home({ params }) {
   const resolvedParams = await params;
   const locale = resolvedParams.locale;
 
   const dict = await getDictionary(locale);
+  const wpData = await getHomePageData(locale);
 
   return (
     <main className="flex flex-col w-full">
@@ -24,7 +26,7 @@ export default async function Home({ params }) {
       <Industries dict={dict.industries} locale={locale} />
       <EliteAdvantage dict={dict.eliteAdvantage} locale={locale} />
       <Insights dict={dict.insights} locale={locale} />
-      <Contact dict={dict.contact} />
+      <Contact dict={dict.contact} wpData={wpData} />
       <Footer dict={dict.footer} />
     </main>
   );
