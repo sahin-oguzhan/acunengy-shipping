@@ -27,7 +27,7 @@ export default async function Home({ params }) {
       <EliteAdvantage dict={dict.eliteAdvantage} locale={locale} />
       <Insights dict={dict.insights} locale={locale} />
       <Contact dict={dict.contact} wpData={wpData} />
-      <Footer dict={dict.footer} />
+      <Footer dict={dict.footer} wpData={wpData} />
     </main>
   );
 }

@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
 
-export default function Navbar({ dict }) {
+export default function Navbar({ dict, wpData }) {
   const pathname = usePathname();
   const router = useRouter();
   const { theme, setTheme } = useTheme();
@@ -24,39 +24,62 @@ export default function Navbar({ dict }) {
     router.push(segments.join('/'));
   };
 
+  // Dinamik Değerler (WP ACF -> JSON Dict -> Hardcoded Fallback)
+  const logoText = wpData?.globalLogo || 'ACUNENGY';
+
+  const nav1 = {
+    label: wpData?.nav1Label || dict?.about || 'About',
+    url: wpData?.nav1Url || '#about',
+  };
+  const nav2 = {
+    label: wpData?.nav2Label || dict?.services || 'Services',
+    url: wpData?.nav2Url || '#services',
+  };
+  const nav3 = {
+    label: wpData?.nav3Label || dict?.industries || 'Industries',
+    url: wpData?.nav3Url || '#industries',
+  };
+  const nav4 = {
+    label: wpData?.nav4Label || dict?.contact || 'Contact',
+    url: wpData?.nav4Url || '#contact',
+  };
+
   return (
     <nav className="fixed w-full z-50 top-0 left-0 bg-customBg/85 backdrop-blur-md border-b border-customBorder transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-6 md:px-16 py-4 flex justify-between items-center">
         {/* Logo */}
-        <div className="text-2xl text-customText font-bold tracking-tighter">
-          ACUNENGY
-        </div>
+        <a
+          href="#"
+          className="text-2xl text-customText font-bold tracking-tighter"
+        >
+          {logoText}
+        </a>
 
         {/* Menü Linkleri */}
         <div className="hidden md:flex items-center gap-8">
           <a
-            href="#"
+            href={nav1.url}
             className="text-customMuted hover:text-customAccent font-inter text-sm font-bold uppercase tracking-widest transition-colors"
           >
-            {dict?.about || 'About'}
+            {nav1.label}
           </a>
           <a
-            href="#"
+            href={nav2.url}
             className="text-customMuted hover:text-customAccent font-inter text-sm font-bold uppercase tracking-widest transition-colors"
           >
-            {dict?.services || 'Services'}
+            {nav2.label}
           </a>
           <a
-            href="#"
+            href={nav3.url}
             className="text-customMuted hover:text-customAccent font-inter text-sm font-bold uppercase tracking-widest transition-colors"
           >
-            {dict?.industries || 'Industries'}
+            {nav3.label}
           </a>
           <a
-            href="#"
+            href={nav4.url}
             className="hover:border-b-2 text-customMuted hover:text-customAccent font-inter text-sm font-bold uppercase tracking-widest transition-colors"
           >
-            {dict?.contact || 'Contact'}
+            {nav4.label}
           </a>
         </div>
 

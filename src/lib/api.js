@@ -128,6 +128,23 @@ export async function getHomePageData(locale = 'en') {
         contactEmail: acf.contact_email,
         contactAddress: acf.contact_address,
         contactWhatsapp: acf.contact_whatsapp,
+        //Header-Footer
+        globalLogo: acf.global_logo,
+        nav1Label: acf.nav_1_label,
+        nav1Url: acf.nav_1_url,
+        nav2Label: acf.nav_2_label,
+        nav2Url: acf.nav_2_url,
+        nav3Label: acf.nav_3_label,
+        nav3Url: acf.nav_3_url,
+        nav4Label: acf.nav_4_label,
+        nav4Url: acf.nav_4_url,
+
+        footerLogo: acf.footer_logo,
+        footerDesc: acf.footer_desc,
+        socialLinkedin: acf.social_linkedin,
+        socialTwitter: acf.social_twitter,
+        socialInstagram: acf.social_instagram,
+        footerRights: acf.footer_rights,
       };
     }
     return null;

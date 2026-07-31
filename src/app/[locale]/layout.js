@@ -3,6 +3,7 @@ import '../globals.css';
 import { ThemeProvider } from '@/components/ThemeProvider';
 import Navbar from '@/components/Navbar';
 import { getDictionary } from '@/dictionaries/getDictionary';
+import { getHomePageData } from '@/lib/api';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
 const montserrat = Montserrat({
@@ -21,6 +22,7 @@ export default async function RootLayout({ children, params }) {
   const locale = resolvedParams.locale;
 
   const dict = await getDictionary(locale);
+  const wpData = await getHomePageData(locale);
 
   return (
     <html lang={locale} suppressHydrationWarning>
@@ -34,7 +36,7 @@ export default async function RootLayout({ children, params }) {
         className={`${inter.variable} ${montserrat.variable} font-sans antialiased min-h-screen flex flex-col pt-24`}
       >
         <ThemeProvider>
-          <Navbar dict={dict.navbar} />
+          <Navbar dict={dict.navbar} wpData={wpData} />
           {children}
         </ThemeProvider>
       </body>
