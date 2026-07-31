@@ -1,44 +1,34 @@
 import React from 'react';
+import { getHomePageData, getPosts } from '@/lib/api';
 
-// WordPress'ten yazıları çeken fonksiyon
-async function getWordPressPosts() {
-  try {
-    const res = await fetch(
-      'http://acunengy-shipping.local/wp-json/wp/v2/posts?_embed',
-      {
-        next: { revalidate: 10 }, // 10 saniyede bir veriyi yeniler (ISR)
-      },
-    );
+export default async function Insights({ dict, locale }) {
+  // WordPress'ten hem ana sayfa başlık verilerini hem de son 3 makaleyi çekiyoruz
+  const [wpData, posts] = await Promise.all([
+    getHomePageData(locale),
+    getPosts(3),
+  ]);
 
-    if (!res.ok) {
-      throw new Error('WordPress verileri alınamadı');
-    }
-
-    const posts = await res.json();
-    return posts;
-  } catch (error) {
-    console.error('API Hatası:', error);
-    return [];
-  }
-}
-
-export default async function Insights({ dict }) {
-  const posts = await getWordPressPosts();
+  // Başlık Alanları (WP ACF -> JSON Dict -> Fallback)
+  const displayBadge = wpData?.insightsBadge || dict?.badge || 'OUR INSIGHTS';
+  const displayTitle =
+    wpData?.insightsTitle || dict?.title || 'Latest News & Perspectives';
+  const displayDesc =
+    wpData?.insightsDesc ||
+    dict?.description ||
+    'Expert analysis and updates from the maritime logistics sector.';
+  const displayBtnReadMore = dict?.btnReadMore || 'READ ARTICLE';
 
   return (
     <section className="py-24 px-6 md:px-16 bg-customBg">
       {/* Başlık Alanı */}
       <div className="text-center max-w-3xl mx-auto mb-16 md:mb-20">
         <span className="font-mono text-xs md:text-sm text-customMuted tracking-widest uppercase mb-4 block font-medium">
-          {dict?.badge || 'OUR INSIGHTS'}
+          {displayBadge}
         </span>
         <h2 className="text-3xl md:text-5xl text-customText font-bold mb-6 font-heading tracking-tight">
-          {dict?.title || 'Latest News & Perspectives'}
+          {displayTitle}
         </h2>
-        <p className="text-customMuted text-base md:text-lg">
-          {dict?.description ||
-            'Expert analysis and updates from the maritime logistics sector.'}
-        </p>
+        <p className="text-customMuted text-base md:text-lg">{displayDesc}</p>
       </div>
 
       {/* WordPress'ten Gelen Yazıların Listesi */}
@@ -54,11 +44,13 @@ export default async function Insights({ dict }) {
                   MARITIME NEWS
                 </span>
                 <h3 className="text-xl font-bold font-heading text-customText mb-4 group-hover:text-customAccent transition-colors">
-                  {post.title.rendered}
+                  {post.title?.rendered}
                 </h3>
                 <div
                   className="text-customMuted mb-6 text-sm leading-relaxed line-clamp-3"
-                  dangerouslySetInnerHTML={{ __html: post.excerpt.rendered }}
+                  dangerouslySetInnerHTML={{
+                    __html: post.excerpt?.rendered || '',
+                  }}
                 />
               </div>
 
@@ -68,7 +60,7 @@ export default async function Insights({ dict }) {
                 rel="noopener noreferrer"
                 className="font-mono text-xs text-customText font-bold flex items-center gap-2 group-hover:gap-4 group-hover:text-customAccent transition-all uppercase tracking-wider"
               >
-                {dict?.btnReadMore || 'READ ARTICLE'}{' '}
+                {displayBtnReadMore}{' '}
                 <span className="material-symbols-outlined text-sm">
                   arrow_forward
                 </span>

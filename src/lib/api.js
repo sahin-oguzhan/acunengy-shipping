@@ -116,6 +116,10 @@ export async function getHomePageData(locale = 'en') {
             desc: acf.adv_3_desc,
           },
         ],
+        // Insights
+        insightsBadge: acf.insights_badge,
+        insightsTitle: acf.insights_title,
+        insightsDesc: acf.insights_desc,
       };
     }
     return null;
@@ -125,32 +129,17 @@ export async function getHomePageData(locale = 'en') {
   }
 }
 
-export async function getInsights(locale = 'en') {
+export async function getPosts(perPage = 3) {
   try {
-    const res = await fetch(
-      `${API_URL}/posts?_embed&lang=${locale}&per_page=3`,
-      {
-        next: { revalidate: 60 },
-      },
-    );
+    const res = await fetch(`${API_URL}/posts?per_page=${perPage}&_embed`, {
+      next: { revalidate: 10 },
+    });
 
-    if (!res.ok) {
-      throw new Error('Failed to fetch insights from WordPress');
-    }
+    if (!res.ok) throw new Error('WordPress yazıları alınamadı');
 
-    const posts = await res.json();
-
-    return posts.map((post) => ({
-      category: post._embedded?.['wp:term']?.[0]?.[0]?.name || 'LOGISTICS',
-      title: post.title.rendered,
-      description: post.excerpt.rendered.replace(/<[^>]*>?/gm, ''),
-      image:
-        post._embedded?.['wp:featuredmedia']?.[0]?.source_url ||
-        '/default-image.jpg',
-      slug: post.slug,
-    }));
+    return await res.json();
   } catch (error) {
-    console.error('API Error (getInsights):', error);
+    console.error('API Error (getPosts):', error);
     return [];
   }
 }

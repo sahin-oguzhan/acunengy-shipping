@@ -23,7 +23,7 @@ export default async function Home({ params }) {
       <Services dict={dict.services} locale={locale} />
       <Industries dict={dict.industries} locale={locale} />
       <EliteAdvantage dict={dict.eliteAdvantage} locale={locale} />
-      <Insights dict={dict.insights} />
+      <Insights dict={dict.insights} locale={locale} />
       <Contact dict={dict.contact} />
       <Footer dict={dict.footer} />
     </main>
