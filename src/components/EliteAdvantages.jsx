@@ -1,7 +1,21 @@
 import React from 'react';
+import { getHomePageData } from '@/lib/api';
 
-export default function EliteAdvantage({ dict }) {
-  const advantages = [
+export default async function EliteAdvantage({ dict, locale }) {
+  const wpData = await getHomePageData(locale);
+
+  // Başlıklar
+  const displayBadge = wpData?.advBadge || dict?.badge;
+  const displayTitle1 = wpData?.advTitle1 || dict?.title1;
+  const displayTitle2 = wpData?.advTitle2 || dict?.title2;
+
+  // 1. Dinamik Liste (Sadece WP'de başlığı dolu olanları filtrele)
+  const wpAdvantages = (wpData?.advantagesList || []).filter(
+    (item) => item.title && item.title.trim() !== '',
+  );
+
+  // 2. Fallback Liste (WP boşsa dict'ten beslenir)
+  const fallbackAdvantages = [
     {
       icon: 'schedule',
       title: dict?.adv1Title,
@@ -18,6 +32,15 @@ export default function EliteAdvantage({ dict }) {
       description: dict?.adv3Desc,
     },
   ];
+
+  const finalAdvantages =
+    wpAdvantages.length > 0
+      ? wpAdvantages.map((item) => ({
+          icon: item.icon,
+          title: item.title,
+          description: item.desc,
+        }))
+      : fallbackAdvantages;
 
   return (
     <section className="py-24 overflow-hidden bg-cyan-50 border-t border-customBorder">
@@ -64,14 +87,14 @@ export default function EliteAdvantage({ dict }) {
         {/* Sağ Taraf: Metin ve Avantajlar */}
         <div className="order-1 lg:order-2">
           <span className="font-mono text-sm text-customAccent tracking-widest uppercase mb-4 block font-bold">
-            {dict?.badge}
+            {displayBadge}
           </span>
           <h2 className="text-4xl md:text-5xl text-customText font-bold mb-12 leading-tight font-heading">
-            {dict?.title1} <br className="hidden md:block" /> {dict?.title2}
+            {displayTitle1} <br className="hidden md:block" /> {displayTitle2}
           </h2>
 
           <div className="space-y-10">
-            {advantages.map((adv, index) => (
+            {finalAdvantages.map((adv, index) => (
               <div key={index} className="flex gap-6 group">
                 <div className="w-16 h-16 flex-shrink-0 bg-customCard border border-customBorder flex items-center justify-center group-hover:bg-customAccent group-hover:border-customAccent transition-all rounded-sm shadow-sm">
                   <span className="material-symbols-outlined text-customText group-hover:text-customBg transition-colors text-3xl">

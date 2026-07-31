@@ -77,6 +77,45 @@ export async function getHomePageData(locale = 'en') {
           { value: acf.stat_3_value, label: acf.stat_3_label },
           { value: acf.stat_4_value, label: acf.stat_4_label },
         ],
+        // Industries
+        industriesBadge: acf.industries_badge,
+        industriesTitle: acf.industries_title,
+        industriesDesc: acf.industries_desc,
+        industriesList: [
+          {
+            icon: 'directions_boat',
+            title: acf.industry_1_title,
+            desc: acf.industry_1_desc,
+          },
+          {
+            icon: 'precision_manufacturing',
+            title: acf.industry_2_title,
+            desc: acf.industry_2_desc,
+          },
+          {
+            icon: 'tsunami',
+            title: acf.industry_3_title,
+            desc: acf.industry_3_desc,
+          },
+          {
+            icon: 'factory',
+            title: acf.industry_4_title,
+            desc: acf.industry_4_desc,
+          },
+        ],
+        // EliteAdvantages
+        advBadge: acf.adv_badge,
+        advTitle1: acf.adv_title1,
+        advTitle2: acf.adv_title2,
+        advantagesList: [
+          { icon: 'schedule', title: acf.adv_1_title, desc: acf.adv_1_desc },
+          { icon: 'speed', title: acf.adv_2_title, desc: acf.adv_2_desc },
+          {
+            icon: 'verified_user',
+            title: acf.adv_3_title,
+            desc: acf.adv_3_desc,
+          },
+        ],
       };
     }
     return null;
