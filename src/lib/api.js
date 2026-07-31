@@ -9,21 +9,67 @@ export async function getHomePageData(locale = 'en') {
       next: { revalidate: 10 },
     });
 
-    if (!res.ok) {
-      throw new Error('Ana sayfa verileri alınamadı');
-    }
+    if (!res.ok) throw new Error('Ana sayfa verileri alınamadı');
 
     const pages = await res.json();
 
     if (pages.length > 0) {
       const page = pages[0];
+      const acf = page.acf || {};
+
       return {
-        heroBadge: page.acf?.hero_badge,
-        heroTitle: page.acf?.hero_title,
-        heroTitle2: page.acf?.hero_title2,
-        heroSubtitle: page.acf?.hero_subtitle,
-        heroBtnQuote: page.acf?.hero_btn_left,
-        heroBtnServices: page.acf?.hero_btn_right,
+        // Hero
+        heroBadge: acf.hero_badge,
+        heroTitle: acf.hero_title,
+        heroTitle2: acf.hero_title2,
+        heroSubtitle: acf.hero_subtitle,
+        heroBtnQuote: acf.hero_btn_quote,
+        heroBtnServices: acf.hero_btn_services,
+
+        // About
+        aboutBadge: acf.about_badge,
+        aboutTitle1: acf.about_title1,
+        aboutTitle2: acf.about_title2,
+        aboutDesc1: acf.about_desc1,
+        aboutDesc2: acf.about_desc2,
+
+        // Services
+        servicesBadge: acf.services_badge,
+        servicesTitle: acf.services_title,
+        servicesDesc: acf.services_desc,
+        servicesBtn: acf.services_btn,
+        servicesList: [
+          {
+            icon: 'anchor',
+            title: acf.service_1_title,
+            desc: acf.service_1_desc,
+          },
+          {
+            icon: 'directions_boat',
+            title: acf.service_2_title,
+            desc: acf.service_2_desc,
+          },
+          {
+            icon: 'precision_manufacturing',
+            title: acf.service_3_title,
+            desc: acf.service_3_desc,
+          },
+          {
+            icon: 'architecture',
+            title: acf.service_4_title,
+            desc: acf.service_4_desc,
+          },
+          {
+            icon: 'wind_power',
+            title: acf.service_5_title,
+            desc: acf.service_5_desc,
+          },
+          {
+            icon: 'support_agent',
+            title: acf.service_6_title,
+            desc: acf.service_6_desc,
+          },
+        ],
       };
     }
     return null;

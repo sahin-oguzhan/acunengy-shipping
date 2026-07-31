@@ -18,9 +18,9 @@ export default async function Home({ params }) {
   return (
     <main className="flex flex-col w-full">
       <Hero dict={dict.hero} locale={locale} />
-      <About dict={dict.about} />
+      <About dict={dict.about} locale={locale} />
       <Stats dict={dict.stats} />
-      <Services dict={dict.services} />
+      <Services dict={dict.services} locale={locale} />
       <Industries dict={dict.industries} />
       <EliteAdvantage dict={dict.eliteAdvantage} />
       <Insights dict={dict.insights} />

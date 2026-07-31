@@ -1,38 +1,56 @@
 import React from 'react';
+import { getHomePageData } from '@/lib/api';
 
-export default function About({ dict }) {
+export default async function About({ dict, locale }) {
+  // WordPress'ten verileri çekiyoruz
+  const wpData = await getHomePageData(locale);
+
+  // Eşleştirmeler: WP'de varsa onu kullan, yoksa JSON (dict) yedeğine dön
+  const displayBadge = wpData?.aboutBadge || dict.badge;
+  const displayTitle1 = wpData?.aboutTitle1 || dict.title1;
+  const displayTitle2 = wpData?.aboutTitle2 || dict.title2;
+  const displayDesc1 = wpData?.aboutDesc1 || dict.desc1;
+  const displayDesc2 = wpData?.aboutDesc2 || dict.desc2;
+
+  // Metrikler ve Harita yazısı (Şimdilik dict'ten geliyor)
+  const displayMetric1Value = wpData?.aboutMetric1Value || dict.metric1Value;
+  const displayMetric1Label = wpData?.aboutMetric1Label || dict.metric1Label;
+  const displayMetric2Value = wpData?.aboutMetric2Value || dict.metric2Value;
+  const displayMetric2Label = wpData?.aboutMetric2Label || dict.metric2Label;
+  const displayLiveMap = wpData?.aboutLiveMap || dict.liveMap;
+
   return (
     <section className="py-24 px-6 md:px-16 bg-customSurface grid grid-cols-1 md:grid-cols-2 gap-20 items-center">
       {/* Sol Taraf: Yazılar */}
       <div>
         <span className="font-mono text-sm text-customMuted tracking-widest uppercase mb-4 block">
-          {dict.badge}
+          {displayBadge}
         </span>
         <h2 className="text-4xl md:text-5xl text-customText font-bold mb-8 leading-tight font-heading">
-          {dict.title1} <br /> {dict.title2}
+          {displayTitle1} <br /> {displayTitle2}
         </h2>
 
         <div className="space-y-6 text-customMuted text-lg mb-12">
-          <p>{dict.desc1}</p>
-          <p>{dict.desc2}</p>
+          <p>{displayDesc1}</p>
+          <p>{displayDesc2}</p>
         </div>
 
         {/* Alt Metrikler */}
         <div className="grid grid-cols-2 gap-8">
           <div className="border-t border-customBorder pt-6">
             <span className="font-mono text-customAccent text-3xl font-bold">
-              {dict.metric1Value}
+              {displayMetric1Value}
             </span>
             <p className="font-mono text-sm text-customMuted mt-2 uppercase font-medium">
-              {dict.metric1Label}
+              {displayMetric1Label}
             </p>
           </div>
           <div className="border-t border-customBorder pt-6">
             <span className="font-mono text-customAccent text-3xl font-bold">
-              {dict.metric2Value}
+              {displayMetric2Value}
             </span>
             <p className="font-mono text-sm text-customMuted mt-2 uppercase font-medium">
-              {dict.metric2Label}
+              {displayMetric2Label}
             </p>
           </div>
         </div>
@@ -47,7 +65,7 @@ export default function About({ dict }) {
             <span className="relative inline-flex rounded-full h-3 w-3 bg-red-600"></span>
           </span>
           <span className="font-mono text-xs uppercase tracking-widest text-customText font-bold">
-            {dict.liveMap}
+            {displayLiveMap}
           </span>
         </div>
 

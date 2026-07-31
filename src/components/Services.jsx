@@ -1,12 +1,24 @@
 import React from 'react';
+import { getHomePageData } from '@/lib/api';
 
-export default function Services({ dict }) {
-  const servicesData = [
-    {
-      icon: 'anchor',
-      title: dict?.srv1Title,
-      description: dict?.srv1Desc,
-    },
+export default async function Services({ dict, locale }) {
+  const wpData = await getHomePageData(locale);
+
+  // Başlıklar
+  const displayBadge = wpData?.servicesBadge || dict?.badge;
+  const displayTitle = wpData?.servicesTitle || dict?.title;
+  const displayDesc = wpData?.servicesDesc || dict?.description;
+  const displayBtnLearnMore =
+    wpData?.servicesBtn || dict?.btnLearnMore || 'LEARN MORE';
+
+  // 1. DİNAMİK LİSTE: WP'den gelen kartlardan sadece BAŞLIĞI DOLU olanları alıyoruz!
+  const wpServices = (wpData?.servicesList || []).filter(
+    (item) => item.title && item.title.trim() !== '',
+  );
+
+  // 2. YEDEK LİSTE: Eğer WP'de hiç kart doldurulmadıysa (wpServices boşsa) dict'teki 6 kartı kullan
+  const fallbackServices = [
+    { icon: 'anchor', title: dict?.srv1Title, description: dict?.srv1Desc },
     {
       icon: 'directions_boat',
       title: dict?.srv2Title,
@@ -22,11 +34,7 @@ export default function Services({ dict }) {
       title: dict?.srv4Title,
       description: dict?.srv4Desc,
     },
-    {
-      icon: 'wind_power',
-      title: dict?.srv5Title,
-      description: dict?.srv5Desc,
-    },
+    { icon: 'wind_power', title: dict?.srv5Title, description: dict?.srv5Desc },
     {
       icon: 'support_agent',
       title: dict?.srv6Title,
@@ -34,24 +42,32 @@ export default function Services({ dict }) {
     },
   ];
 
+  // Eğer WP'de en az 1 tane bile doldurulmuş kart varsa onu kullan, yoksa yedeği kullan
+  const finalServices =
+    wpServices.length > 0
+      ? wpServices.map((item) => ({
+          icon: item.icon,
+          title: item.title,
+          description: item.desc,
+        }))
+      : fallbackServices;
+
   return (
     <section className="py-24 px-6 md:px-16 bg-customBg">
       {/* Başlık Alanı */}
       <div className="text-center max-w-3xl mx-auto mb-16 md:mb-20">
         <span className="font-mono text-xs md:text-sm text-customMuted tracking-widest uppercase mb-4 block font-medium">
-          {dict?.badge}
+          {displayBadge}
         </span>
         <h2 className="text-3xl md:text-5xl text-customText font-bold mb-6 font-heading tracking-tight">
-          {dict?.title}
+          {displayTitle}
         </h2>
-        <p className="text-customMuted text-base md:text-lg">
-          {dict?.description}
-        </p>
+        <p className="text-customMuted text-base md:text-lg">{displayDesc}</p>
       </div>
 
-      {/* 6'lı Kart Gridi */}
+      {/* Dinamik Kart Gridi (Kart sayısına göre otomatik hizalanır) */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {servicesData.map((service, index) => (
+        {finalServices.map((service, index) => (
           <div
             key={index}
             className="bg-customSurface p-8 md:p-10 border border-customBorder hover:border-customAccent transition-all duration-300 group shadow-sm hover:shadow-xl rounded-sm flex flex-col justify-between"
@@ -78,7 +94,7 @@ export default function Services({ dict }) {
               href="#"
               className="font-mono text-xs text-customText font-bold flex items-center gap-2 group-hover:gap-4 group-hover:text-customAccent transition-all uppercase tracking-wider"
             >
-              {dict?.btnLearnMore || 'LEARN MORE'}{' '}
+              {displayBtnLearnMore}{' '}
               <span className="material-symbols-outlined text-sm">
                 arrow_forward
               </span>
