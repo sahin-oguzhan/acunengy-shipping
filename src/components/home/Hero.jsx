@@ -41,9 +41,14 @@ export default function Hero({ dict, locale, wpData }) {
           loop
           muted
           playsInline
+          preload="metadata"
+          poster="/images/hero-poster.jpg" /* Video yüklenene kadar görünecek hafif kapak resmi */
           className="w-full h-full object-cover object-center scale-105"
-          src="/videos/hero-video.mp4"
-        />
+        >
+          {/* Modern tarayıcılar önce hafif olan WebM'i yükler */}
+          <source src="/videos/hero-video.webm" type="video/webm" />
+          <source src="/videos/hero-video.mp4" type="video/mp4" />
+        </video>
 
         <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent z-10 pointer-events-none" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/30 z-10 pointer-events-none" />
