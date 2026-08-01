@@ -1,16 +1,16 @@
-import Hero from '@/components/Hero';
-import About from '@/components/About';
-import Stats from '@/components/Stats';
-import Services from '@/components/Services';
-import Specializations from '@/components/Specializations';
-import Industries from '@/components/Industries';
-import FleetOperations from '@/components/FleetOperations';
-import WhyChooseUs from '@/components/WhyChooseUs';
-import EliteAdvantage from '@/components/EliteAdvantages';
-import News from '@/components/News';
-import Contact from '@/components/Contact';
-import EmergencyWidget from '@/components/EmergencyWidget';
-import Footer from '@/components/Footer';
+import Hero from '@/components/home/Hero';
+import About from '@/components/home/About';
+import Stats from '@/components/home/Stats';
+import Services from '@/components/home/Services';
+import Specializations from '@/components/home/Specializations';
+import Industries from '@/components/home/Industries';
+import FleetOperations from '@/components/home/FleetOperations';
+import WhyChooseUs from '@/components/home/WhyChooseUs';
+import EliteAdvantage from '@/components/home/EliteAdvantages';
+import News from '@/components/home/News';
+import Contact from '@/components/home/Contact';
+import EmergencyWidget from '@/components/layout/EmergencyWidget';
+import Footer from '@/components/layout/Footer';
 import { getDictionary } from '@/dictionaries/getDictionary';
 import { getHomePageData } from '@/lib/api';
 
@@ -23,21 +23,48 @@ export default async function Home({ params }) {
 
   return (
     <main className="flex flex-col w-full">
-      <Hero dict={dict.hero} locale={locale} />
-      <About dict={dict.about} locale={locale} wpData={wpData} />
+      {/* Navbar'daki 'hero' ID'si ile eşleşir */}
+      <section id="hero">
+        <Hero dict={dict.hero} locale={locale} />
+      </section>
+
+      {/* Navbar'daki 'about' ID'si ile eşleşir */}
+      <section id="about">
+        <About dict={dict.about} locale={locale} wpData={wpData} />
+      </section>
+
       <Stats dict={dict.stats} locale={locale} wpData={wpData} />
-      <Services dict={dict.services} locale={locale} wpData={wpData} />
+
+      {/* Navbar'daki 'services' ID'si ile eşleşir */}
+      <section id="services">
+        <Services dict={dict.services} locale={locale} wpData={wpData} />
+      </section>
+
       <Specializations
         dict={dict.specializations}
         locale={locale}
         wpData={wpData}
       />
-      <Industries dict={dict.industries} locale={locale} />
-      <FleetOperations dict={dict.fleet} locale={locale} wpData={wpData} />
+
+      <Industries dict={dict.industries} locale={locale} wpData={wpData} />
+
+      {/* Navbar'daki 'fleet' ID'si ile eşleşir */}
+      <section id="fleet">
+        <FleetOperations dict={dict.fleet} locale={locale} wpData={wpData} />
+      </section>
+
       <WhyChooseUs dict={dict.whyChooseUs} locale={locale} wpData={wpData} />
-      <EliteAdvantage dict={dict.eliteAdvantage} locale={locale} />
-      <News dict={dict.insights} locale={locale} wpData={wpData} />
-      <Contact dict={dict.contact} wpData={wpData} />
+
+      {/* Navbar'daki 'news' (Insights) ID'si ile eşleşir */}
+      <section id="news">
+        <News dict={dict.insights} locale={locale} wpData={wpData} />
+      </section>
+
+      {/* Navbar'daki 'contact' ID'si ile eşleşir */}
+      <section id="contact">
+        <Contact dict={dict.contact} wpData={wpData} />
+      </section>
+
       <EmergencyWidget />
       <Footer dict={dict.footer} wpData={wpData} />
     </main>

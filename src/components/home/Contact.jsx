@@ -1,0 +1,267 @@
+'use client';
+
+import React, { useState, useRef } from 'react';
+import emailjs from '@emailjs/browser';
+import FadeIn from '@/components/ui/FadeIn';
+
+export default function Contact({ dict, wpData }) {
+  const formRef = useRef();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState(null);
+
+  const [formData, setFormData] = useState({
+    user_name: '',
+    user_email: '',
+    user_service: '',
+    message: '',
+  });
+
+  const displayBadge = wpData?.contactBadge || dict?.badge || 'CONTACT US';
+  const displayTitle = wpData?.contactTitle || dict?.title || 'Get in Touch';
+  const displayDesc =
+    wpData?.contactDesc ||
+    dict?.description ||
+    'Reach out to our global operations desk for immediate maritime support and project cargo inquiries.';
+
+  const displayPhone = wpData?.contactPhone || '+90 532 XXX XX XX';
+  const displayEmail = wpData?.contactEmail || 'shipping@acunengy.com';
+  const displayAddress =
+    wpData?.contactAddress ||
+    'Plaza Cubes Office Solutions, Mistral Tower, Konak / İzmir, Türkiye';
+  const whatsappUrl = wpData?.contactWhatsapp || '#';
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const sendEmail = (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    emailjs
+      .sendForm(
+        'service_lcw0fqz',
+        'template_gsq0q5s',
+        formRef.current,
+        'jQFpGWnhcgr9QoCsM',
+      )
+      .then(
+        (result) => {
+          setSubmitStatus('success');
+          setIsSubmitting(false);
+          setFormData({
+            user_name: '',
+            user_email: '',
+            user_service: '',
+            message: '',
+          });
+
+          setTimeout(() => setSubmitStatus(null), 4000);
+        },
+        (error) => {
+          setSubmitStatus('error');
+          setIsSubmitting(false);
+          console.log(error.text);
+        },
+      );
+  };
+
+  return (
+    <section className="relative py-28 px-6 md:px-16 overflow-hidden bg-customBg border-t border-customBorder/80 transition-colors duration-300">
+      {/* Arka plan görsel maskesi */}
+      <div className="absolute inset-0 opacity-10 pointer-events-none">
+        <div
+          className="w-full h-full bg-cover bg-center"
+          style={{
+            backgroundImage:
+              "url('https://lh3.googleusercontent.com/aida-public/AB6AXuBONveGnvoRVEMwiZMsLDSl_IsHYJgsTx83HYglPA899m0IDbC0k-Sglu8GweCxD7Y7U4bNCM8URNOgzpHZanpv06uRJzX8vLI0KPH1i9iWYZ-JbCyQ2MCpu7e7GejNaUuYmofqKqGnPrOv0BDOlj4UBIDfVCCJFgzNuMnZZe7lEc_sKYlRk-KTWl04H2eaBMyerSQyL3yzt-1XC7gn9LN7r5XHdBcJwyEbFf1z_jSK8ZxyC56L9ylC')",
+          }}
+        />
+      </div>
+
+      <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-20 max-w-7xl mx-auto items-center">
+        {/* Sol Taraf: İletişim Bilgileri */}
+        <FadeIn direction="up">
+          <div>
+            <span className="inline-block font-mono text-xs md:text-sm text-customAccent tracking-widest uppercase mb-4 px-3.5 py-1.5 rounded-full bg-customAccent/10 border border-customAccent/20 font-semibold">
+              {displayBadge}
+            </span>
+            <h2 className="text-3xl md:text-5xl text-customText font-black mb-6 font-heading tracking-tight">
+              {displayTitle}
+            </h2>
+            <p className="text-customMuted text-base md:text-lg mb-12 leading-relaxed font-normal">
+              {displayDesc}
+            </p>
+
+            <div className="space-y-8">
+              <div className="flex gap-6 items-start group">
+                <div className="p-3.5 bg-customSurface/80 border border-customBorder rounded-2xl group-hover:border-customAccent/40 group-hover:bg-customAccent/15 transition-all shadow-sm">
+                  <span className="material-symbols-outlined text-customAccent text-2xl block">
+                    emergency
+                  </span>
+                </div>
+                <div>
+                  <p className="font-mono text-xs text-customMuted uppercase font-bold tracking-wider">
+                    {dict?.emergency || 'EMERGENCY DESK'}
+                  </p>
+                  <p className="text-customText text-lg md:text-xl font-bold font-mono mt-1 tracking-tight">
+                    {displayPhone}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex gap-6 items-start group">
+                <div className="p-3.5 bg-customSurface/80 border border-customBorder rounded-2xl group-hover:border-customAccent/40 group-hover:bg-customAccent/15 transition-all shadow-sm">
+                  <span className="material-symbols-outlined text-customAccent text-2xl block">
+                    mail
+                  </span>
+                </div>
+                <div>
+                  <p className="font-mono text-xs text-customMuted uppercase font-bold tracking-wider">
+                    {dict?.general || 'GENERAL INQUIRIES'}
+                  </p>
+                  <p className="text-customText text-lg md:text-xl font-bold font-mono mt-1 tracking-tight">
+                    {displayEmail}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex gap-6 items-start group">
+                <div className="p-3.5 bg-customSurface/80 border border-customBorder rounded-2xl group-hover:border-customAccent/40 group-hover:bg-customAccent/15 transition-all shadow-sm">
+                  <span className="material-symbols-outlined text-customAccent text-2xl block">
+                    location_on
+                  </span>
+                </div>
+                <div>
+                  <p className="font-mono text-xs text-customMuted uppercase font-bold tracking-wider">
+                    {dict?.office || 'HEADQUARTERS'}
+                  </p>
+                  <p className="text-customText text-sm md:text-base font-medium mt-1 leading-relaxed">
+                    {displayAddress}
+                  </p>
+                </div>
+              </div>
+
+              <div className="pt-4">
+                <a
+                  href={whatsappUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-3 bg-[#25D366] text-white px-8 py-4 font-mono text-xs uppercase tracking-widest hover:opacity-90 transition-all font-extrabold rounded-2xl shadow-lg hover:shadow-xl"
+                >
+                  <span className="material-symbols-outlined text-lg">
+                    chat
+                  </span>
+                  {dict?.whatsapp || 'WHATSAPP DESK'}
+                </a>
+              </div>
+            </div>
+          </div>
+        </FadeIn>
+
+        {/* Sağ Taraf: Modern Cam Efektli İletişim Formu */}
+        <FadeIn direction="up">
+          <div className="bg-customSurface/60 backdrop-blur-xl p-8 md:p-12 border border-customBorder/80 rounded-3xl shadow-2xl relative z-10">
+            <form ref={formRef} onSubmit={sendEmail} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="font-mono text-xs text-customMuted uppercase font-bold tracking-wider">
+                    {dict?.formName || 'Full Name'}
+                  </label>
+                  <input
+                    type="text"
+                    name="user_name"
+                    required
+                    value={formData.user_name}
+                    onChange={handleChange}
+                    placeholder="John Doe"
+                    className="w-full bg-customBg/80 border border-customBorder/80 rounded-2xl text-customText p-4 focus:border-customAccent focus:outline-none transition-colors text-sm font-medium shadow-sm"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="font-mono text-xs text-customMuted uppercase font-bold tracking-wider">
+                    {dict?.formEmail || 'Email Address'}
+                  </label>
+                  <input
+                    type="email"
+                    name="user_email"
+                    required
+                    value={formData.user_email}
+                    onChange={handleChange}
+                    placeholder="john@company.com"
+                    className="w-full bg-customBg/80 border border-customBorder/80 rounded-2xl text-customText p-4 focus:border-customAccent focus:outline-none transition-colors text-sm font-medium shadow-sm"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="font-mono text-xs text-customMuted uppercase font-bold tracking-wider">
+                  {dict?.formService || 'Service Required'}
+                </label>
+                <select
+                  name="user_service"
+                  required
+                  value={formData.user_service}
+                  onChange={handleChange}
+                  className="w-full bg-customBg/80 border border-customBorder/80 rounded-2xl text-customText p-4 focus:border-customAccent focus:outline-none transition-colors appearance-none cursor-pointer text-sm font-medium shadow-sm"
+                >
+                  <option value="" disabled>
+                    Select a Service...
+                  </option>
+                  <option value="Ship Agency">Ship Agency</option>
+                  <option value="Project Cargo">Project Cargo</option>
+                  <option value="Heavy Lift">Heavy Lift</option>
+                  <option value="Offshore Support">Offshore Support</option>
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <label className="font-mono text-xs text-customMuted uppercase font-bold tracking-wider">
+                  {dict?.formMessage || 'Message & Specifications'}
+                </label>
+                <textarea
+                  name="message"
+                  required
+                  value={formData.message}
+                  onChange={handleChange}
+                  placeholder="Provide cargo details, port of call, or timeline..."
+                  className="w-full bg-customBg/80 border border-customBorder/80 rounded-2xl text-customText p-4 focus:border-customAccent focus:outline-none transition-colors resize-none text-sm font-medium shadow-sm"
+                  rows="4"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className={`w-full py-4 font-mono text-xs uppercase tracking-widest transition-all font-extrabold rounded-2xl flex justify-center items-center gap-2 shadow-lg cursor-pointer
+                  ${
+                    isSubmitting
+                      ? 'bg-customMuted text-slate-950 cursor-not-allowed'
+                      : 'bg-customAccent text-slate-950 hover:opacity-90 shadow-[0_0_20px_rgba(56,189,248,0.3)]'
+                  }`}
+              >
+                {isSubmitting
+                  ? dict?.btnSending || 'TRANSMITTING...'
+                  : dict?.btnSend || 'SEND INQUIRY'}
+              </button>
+
+              {/* Bildirim Mesajları */}
+              {submitStatus === 'success' && (
+                <p className="text-emerald-400 font-mono text-xs font-bold text-center mt-4 bg-emerald-500/10 border border-emerald-500/30 py-3 rounded-xl">
+                  {dict?.msgSuccess ||
+                    'Inquiry successfully transmitted. Our desk will contact you shortly.'}
+                </p>
+              )}
+              {submitStatus === 'error' && (
+                <p className="text-rose-400 font-mono text-xs font-bold text-center mt-4 bg-rose-500/10 border border-rose-500/30 py-3 rounded-xl">
+                  {dict?.msgError ||
+                    'Transmission failed. Please try again or use direct email.'}
+                </p>
+              )}
+            </form>
+          </div>
+        </FadeIn>
+      </div>
+    </section>
+  );
+}

@@ -65,3 +65,51 @@ body {
     background-color 0.3s ease,
     color 0.3s ease;
 }
+
+@keyframes shipFloat {
+  0%,
+  100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-10px) rotate(0.8deg);
+  }
+}
+
+.animate-ship-float {
+  animation: shipFloat 5s ease-in-out infinite;
+}
+
+@keyframes infiniteScroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-33.333%);
+  }
+}
+
+.animate-infinite-scroll {
+  display: flex;
+  width: max-content;
+  animation: infiniteScroll 25s linear infinite;
+}
+
+@keyframes servicesScroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-33.333%);
+  }
+}
+
+.animate-services-scroll {
+  display: flex;
+  width: max-content;
+  animation: servicesScroll 40s linear infinite;
+}
+
+html {
+  scroll-behavior: smooth;
+}
