@@ -1,112 +1,170 @@
-import React from 'react';
+'use client';
+
+import React, { useState } from 'react';
 import FadeIn from '@/components/FadeIn';
 
-export default function Specializations() {
-  const industries = [
+export default function Specializations({ dict, locale, wpData }) {
+  const [activeTab, setActiveTab] = useState(0);
+
+  const displayBadge = wpData?.specsBadge || dict?.badge || 'SECTOR EXPERTISE';
+  const displayTitle =
+    wpData?.specsTitle || dict?.title || 'Industry Specializations';
+  const displayDesc =
+    wpData?.specsDesc ||
+    dict?.description ||
+    'Tailored marine engineering and logistics frameworks engineered for high-stakes industrial sectors.';
+
+  const sectors = [
     {
-      id: 'wind',
-      tag: 'Renewables & Green Tech',
+      id: 'wind-energy',
       title: 'Wind Energy Logistics',
-      desc: 'End-to-end transportation and heavy-lift operations for offshore and onshore wind turbine components, blades, and tower sections.',
+      category: 'RENEWABLE ENERGY',
+      code: '01 / RENEWABLES',
+      desc: 'Precision transport for onshore & offshore turbine components. We manage oversized blades, tower sections, and heavy nacelles across international maritime corridors with specialized vessels.',
+      statsValue: '120+',
+      statsLabel: 'Blade Arrays Shipped',
       image:
-        'https://images.unsplash.com/photo-1466611653911-95081537e5b7?auto=format&fit=crop&q=80&w=1200',
-      specs: ['Offshore Turbines', 'Blade Transport', 'Port Marshalling'],
+        'https://images.unsplash.com/photo-1466611653911-95081537e5b7?q=80&w=1200&auto=format&fit=crop',
+      icon: 'wind_power',
     },
     {
       id: 'oil-gas',
-      tag: 'Energy Infrastructure',
       title: 'Oil & Gas Operations',
-      desc: 'Specialized marine supply chain solutions, offshore rig support, and heavy equipment transport for global energy giants.',
+      category: 'ENERGY & OFFSHORE',
+      code: '02 / OFFSHORE',
+      desc: 'Offshore supply vessel chartering, rig mobilization support, and strict HSE-compliant hazardous materials logistics designed for extreme marine environments.',
+      statsValue: '0.0',
+      statsLabel: 'HSE Incident Rate',
       image:
-        'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&q=80&w=1200',
-      specs: ['Rig Husbandry', 'Hazardous Cargo', '24/7 Supply Vessels'],
+        'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=1200&auto=format&fit=crop',
+      icon: 'oil_barrel',
     },
     {
       id: 'infrastructure',
-      tag: 'Heavy Engineering',
-      title: 'Infrastructure & Mining',
-      desc: 'Customized Project Cargo solutions for bridges, mining machinery, power plants, and large-scale industrial machinery.',
+      title: 'Infrastructure & Heavy Plant',
+      category: 'HEAVY INDUSTRY',
+      code: '03 / INFRASTRUCTURE',
+      desc: 'Turnkey marine logistics for civil construction mega-projects, power plant turbines, mining machinery, and port crane systems up to 800-ton single-lift operations.',
+      statsValue: '800T',
+      statsLabel: 'Single-Lift Capacity',
       image:
-        'https://images.unsplash.com/photo-1581094794329-c8112a89af12?auto=format&fit=crop&q=80&w=1200',
-      specs: ['Super Heavy Lift', 'Ro-Ro Operations', 'Route Surveys'],
+        'https://images.unsplash.com/photo-1581094794329-c8112a89af12?q=80&w=1200&auto=format&fit=crop',
+      icon: 'precision_manufacturing',
     },
   ];
 
+  const currentSector = sectors[activeTab];
+
   return (
-    <section className="py-24 px-6 md:px-16 bg-customBg border-t border-customBorder relative overflow-hidden">
+    <section className="py-24 px-6 md:px-16 bg-customBg border-t border-customBorder transition-colors duration-300">
       <div className="max-w-7xl mx-auto">
-        {/* Bölüm Başlığı */}
+        {/* Başlık */}
         <FadeIn direction="up">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-16">
-            <div>
-              <span className="font-mono text-xs md:text-sm text-customAccent tracking-[0.2em] uppercase mb-4 block font-semibold">
-                Industry Focus
-              </span>
-              <h2 className="text-3xl md:text-5xl text-customText font-bold font-heading tracking-tight">
-                Sector Specializations
-              </h2>
-            </div>
-            <p className="text-customMuted text-sm md:text-base max-w-md mt-4 md:mt-0 leading-relaxed">
-              Engineering-led maritime logistics tailored for the most demanding
-              industrial sectors worldwide.
-            </p>
+          <div className="mb-16">
+            <span className="font-mono text-xs text-customAccent tracking-widest uppercase mb-3 block font-semibold">
+              {displayBadge}
+            </span>
+            <h2 className="text-3xl md:text-5xl text-customText font-bold font-heading tracking-tight">
+              {displayTitle}
+            </h2>
           </div>
         </FadeIn>
 
-        {/* Uzmanlık Kartları Gridi */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {industries.map((item, index) => (
-            <FadeIn key={item.id} delay={index * 0.15} direction="up">
-              <div className="group relative h-[480px] rounded-sm overflow-hidden border border-customBorder bg-customSurface flex flex-col justify-end p-8 shadow-lg hover:shadow-2xl transition-all duration-500">
-                {/* Arka Plan Görseli & Gradient Maske */}
-                <div className="absolute inset-0 z-0 overflow-hidden">
-                  <img
-                    src={item.image}
-                    alt={item.title}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 opacity-40 group-hover:opacity-60"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#061324] via-[#061324]/80 to-transparent z-10" />
-                </div>
+        {/* Dynamic Split Showcase */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+          {/* SOL TARAFA SEÇİM SEKMELERİ (5 Kolon) */}
+          <div className="lg:col-span-5 flex flex-col justify-between space-y-4">
+            {sectors.map((sector, index) => {
+              const isActive = activeTab === index;
+              return (
+                <button
+                  key={sector.id}
+                  onClick={() => setActiveTab(index)}
+                  className={`text-left p-6 md:p-8 rounded transition-all duration-300 border flex flex-col justify-between relative overflow-hidden group ${
+                    isActive
+                      ? 'bg-customSurface border-customAccent shadow-lg'
+                      : 'bg-customSurface/40 border-customBorder hover:border-customAccent/40 hover:bg-customSurface/80'
+                  }`}
+                >
+                  {/* Aktif İndikatör Çizgisi */}
+                  {isActive && (
+                    <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-customAccent shadow-[0_0_10px_#38bdf8]" />
+                  )}
 
-                {/* Kart İçeriği */}
-                <div className="relative z-20">
-                  <span className="font-mono text-[10px] uppercase tracking-widest text-customAccent font-bold mb-2 block">
-                    {item.tag}
-                  </span>
+                  <div className="flex items-center justify-between mb-4">
+                    <span
+                      className={`font-mono text-xs tracking-wider ${isActive ? 'text-customAccent font-bold' : 'text-customMuted'}`}
+                    >
+                      {sector.code}
+                    </span>
+                    <span
+                      className={`material-symbols-outlined text-xl ${isActive ? 'text-customAccent' : 'text-customMuted'}`}
+                    >
+                      {sector.icon}
+                    </span>
+                  </div>
 
-                  <h3 className="text-2xl font-bold font-heading text-white mb-3">
-                    {item.title}
+                  <h3
+                    className={`text-xl md:text-2xl font-bold font-heading transition-colors ${isActive ? 'text-customText' : 'text-customMuted group-hover:text-customText'}`}
+                  >
+                    {sector.title}
                   </h3>
+                </button>
+              );
+            })}
+          </div>
 
-                  <p className="text-slate-300 text-sm mb-6 line-clamp-3 leading-relaxed">
-                    {item.desc}
-                  </p>
+          {/* SAĞ TARAFA DEV SİNEMATİK SAHNE (7 Kolon) */}
+          <div className="lg:col-span-7">
+            <div className="relative h-[480px] lg:h-[560px] rounded-lg overflow-hidden border border-customBorder bg-customCard shadow-2xl flex flex-col justify-end p-8 md:p-12 group">
+              {/* Dinamik Arka Plan Görseli */}
+              <div
+                key={currentSector.id}
+                className="absolute inset-0 bg-cover bg-center transition-all duration-700 animate-fadeIn"
+                style={{ backgroundImage: `url(${currentSector.image})` }}
+              />
 
-                  {/* Spesifikasyon Etiketleri */}
-                  <div className="flex flex-wrap gap-2 mb-6 border-t border-white/10 pt-4">
-                    {item.specs.map((spec, sIdx) => (
-                      <span
-                        key={sIdx}
-                        className="font-mono text-[10px] text-slate-300 bg-white/5 border border-white/10 px-2.5 py-1 rounded"
-                      >
-                        {spec}
-                      </span>
-                    ))}
+              {/* Akıllı Gradyan Maskesi (Light Mode'da Beyaz-Koyu Geçişi, Dark Mode'da Lacivert Geçişi) */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/60 to-black/20" />
+
+              {/* İçerik (Görsel üstündeki metinler her iki temada da yüksek kontrast için crisp beyaz tutulur) */}
+              <div className="relative z-10 text-white">
+                <span className="font-mono text-xs text-customAccent font-bold uppercase tracking-widest bg-black/60 px-3 py-1 rounded border border-customAccent/40 inline-block mb-4 backdrop-blur-md">
+                  {currentSector.category}
+                </span>
+
+                <h3 className="text-3xl md:text-4xl font-bold text-white font-heading mb-4 drop-shadow-md">
+                  {currentSector.title}
+                </h3>
+
+                <p className="text-gray-200 text-sm md:text-base leading-relaxed max-w-xl mb-8 drop-shadow">
+                  {currentSector.desc}
+                </p>
+
+                {/* Büyük Metrik Kutusu */}
+                <div className="pt-6 border-t border-white/20 flex items-center justify-between">
+                  <div>
+                    <span className="font-mono text-3xl md:text-4xl font-bold text-customAccent block drop-shadow">
+                      {currentSector.statsValue}
+                    </span>
+                    <span className="font-mono text-xs text-gray-300 uppercase tracking-wider">
+                      {currentSector.statsLabel}
+                    </span>
                   </div>
 
                   <a
-                    href="#"
-                    className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-customAccent group-hover:text-white transition-colors font-bold"
+                    href="#contact"
+                    className="inline-flex items-center gap-2 font-mono text-xs text-white bg-customAccent/20 hover:bg-customAccent hover:text-[#0B2341] border border-customAccent/60 px-5 py-3 rounded transition-all font-bold uppercase tracking-wider backdrop-blur-md"
                   >
-                    Explore Sector Solutions
-                    <span className="material-symbols-outlined text-sm group-hover:translate-x-1 transition-transform">
+                    Request Specialization Brief
+                    <span className="material-symbols-outlined text-sm">
                       arrow_forward
                     </span>
                   </a>
                 </div>
               </div>
-            </FadeIn>
-          ))}
+            </div>
+          </div>
         </div>
       </div>
     </section>

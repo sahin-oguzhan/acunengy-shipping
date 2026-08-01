@@ -1,11 +1,8 @@
 import React from 'react';
-import { getHomePageData } from '@/lib/api';
 import AnimatedCounter from '@/components/AnimatedCounter';
 import FadeIn from '@/components/FadeIn';
 
-export default async function Stats({ dict, locale }) {
-  const wpData = await getHomePageData(locale);
-
+export default async function Stats({ dict, locale, wpData }) {
   // 1. WP'den gelen metriklerden hem SAYI hem de ETİKETİ dolu olanları süzüyoruz
   const wpStats = (wpData?.statsList || []).filter(
     (item) =>
@@ -15,11 +12,11 @@ export default async function Stats({ dict, locale }) {
       item.label.trim() !== '',
   );
 
-  // 2. YEDEK LİSTE
+  // 2. YEDEK LİSTE (Brief 4.8 ile Birebir Eşleşen Fallback)
   const fallbackStats = [
-    { value: '50+', label: dict?.stat1Label || 'Countries Served' },
-    { value: '200+', label: dict?.stat2Label || 'Ports Covered' },
-    { value: '1500+', label: dict?.stat3Label || 'Projects Done' },
+    { value: '200+', label: dict?.stat1Label || 'Ports Covered' },
+    { value: '1500+', label: dict?.stat2Label || 'Projects Completed' },
+    { value: '99.9%', label: dict?.stat3Label || 'Fleet Availability' },
     { value: '24/7', label: dict?.stat4Label || 'Global Presence' },
   ];
 
@@ -33,9 +30,9 @@ export default async function Stats({ dict, locale }) {
         : 'md:grid-cols-4';
 
   return (
-    <section className="py-16 md:py-20 bg-customBg text-customText border-y border-customBorder">
+    <section className="py-16 md:py-20 bg-customBg text-customText border-y border-customBorder transition-colors duration-300">
       <div
-        className={`px-4 md:px-8 lg:px-16 grid grid-cols-2 ${gridColsClass} gap-y-10 text-center md:divide-x md:divide-customBorder`}
+        className={`max-w-7xl mx-auto px-4 md:px-8 lg:px-16 grid grid-cols-2 ${gridColsClass} gap-y-10 text-center md:divide-x md:divide-customBorder`}
       >
         {finalStats.map((stat, index) => (
           <FadeIn key={index} delay={index * 0.15} direction="up">

@@ -6,12 +6,13 @@ import HeroQuoteButton from '@/components/HeroQuoteButton';
 export default async function Hero({ dict, locale }) {
   const wpData = await getHomePageData(locale);
 
-  const displaySubtitle = wpData?.heroBadge || dict.subtitle;
-  const displayTitle1 = wpData?.heroTitle || dict.title1;
-  const displayTitle2 = wpData?.heroTitle2 || dict.title2;
-  const displayDescription = wpData?.heroSubtitle || dict.description;
-  const displayBtnQuote = wpData?.heroBtnQuote || dict.btnQuote;
-  const displayBtnServices = wpData?.heroBtnServices || dict.btnServices;
+  // WordPress Verisi yoksa fallback olarak i18n Dictionary kullanır
+  const displaySubtitle = wpData?.heroBadge || dict?.subtitle;
+  const displayTitle1 = wpData?.heroTitle || dict?.title1;
+  const displayTitle2 = wpData?.heroTitle2 || dict?.title2;
+  const displayDescription = wpData?.heroSubtitle || dict?.description;
+  const displayBtnQuote = wpData?.heroBtnQuote || dict?.btnQuote;
+  const displayBtnServices = wpData?.heroBtnServices || dict?.btnServices;
 
   return (
     <header className="relative h-screen w-full flex items-center overflow-hidden mt-[-96px]">
@@ -36,7 +37,9 @@ export default async function Hero({ dict, locale }) {
             <FadeIn direction="up" delay={0.3}>
               <h1 className="text-4xl md:text-5xl lg:text-6xl text-customText mb-6 leading-tight font-bold tracking-tighter">
                 {displayTitle1} <br />
-                <span className="text-customAccent">{displayTitle2}</span>
+                {displayTitle2 && (
+                  <span className="text-customAccent">{displayTitle2}</span>
+                )}
               </h1>
             </FadeIn>
 
