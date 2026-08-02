@@ -13,10 +13,8 @@ export default function Navbar({ dict, locale }) {
   const pathname = usePathname();
   const currentLocale = pathname?.startsWith('/en') ? 'en' : 'tr';
 
-  // page.js'indeki tüm section id'leri ile tam uyumlu liste
   const navItems = [
     { id: 'hero', label: currentLocale === 'tr' ? 'ANASAYFA' : 'HOME' },
-    { id: 'about', label: currentLocale === 'tr' ? 'HAKKIMIZDA' : 'ABOUT' },
     {
       id: 'services',
       label: currentLocale === 'tr' ? 'HİZMETLER' : 'SERVICES',
@@ -82,7 +80,7 @@ export default function Navbar({ dict, locale }) {
             : 'bg-customBg/85 border-customBorder/80 shadow-black/20'
         }`}
       >
-        {/* 1. SOL KISIM: Navigasyon Linkleri ve Kayan Baloncuk Animasyonu */}
+        {/* 1. SOL KISIM: Navigasyon Linkleri */}
         <div className="hidden lg:flex items-center gap-1 relative bg-customSurface/40 p-1.5 rounded-full border border-customBorder/50">
           {navItems.map((item) => {
             const isActive = activeSection === item.id;
@@ -97,7 +95,6 @@ export default function Navbar({ dict, locale }) {
                     : 'text-customText/80 font-semibold hover:text-customText'
                 }`}
               >
-                {/* Framer Motion ile akışkan baloncuk efekti */}
                 {isActive && (
                   <motion.div
                     layoutId="activeBubble"
@@ -111,24 +108,21 @@ export default function Navbar({ dict, locale }) {
           })}
         </div>
 
-        {/* 2. ORTA KISIM: Marka Logosu */}
         <a
           href="#hero"
           onClick={(e) => scrollToSection(e, 'hero')}
-          className="flex items-center gap-2 text-lg md:text-xl font-black tracking-tighter text-customText hover:opacity-90 transition-opacity drop-shadow-md pl-2 lg:pl-0"
+          className="flex gap-1 items-center justify-center font-heading font-black tracking-tight leading-none hover:opacity-90 transition-opacity drop-shadow-md py-1 px-2"
         >
-          <span className="text-customAccent text-2xl">⬡</span>
-          <span>ACUNENGY</span>
+          <span className="text-lg md:text-xl text-customText">ACUNENGY</span>
+          <span className="text-lg md:text-xl text-customAccent">SHIPPING</span>
         </a>
 
         {/* 3. SAĞ KISIM: Tema ve Dil Butonları */}
         <div className="hidden lg:flex items-center gap-4">
-          {/* Dark / Light Toggle */}
           <div className="flex items-center justify-center w-10 h-10 rounded-full bg-customSurface/90 border border-customBorder text-customText shadow-md">
             <ThemeToggle />
           </div>
 
-          {/* Dil Seçeneği Butonu (İstediğin gibi Light: Mavi, Dark: Beyaz) */}
           <button
             onClick={toggleLanguage}
             className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-customAccent text-customBg dark:bg-white dark:text-slate-950 font-mono text-sm font-extrabold tracking-widest hover:brightness-110 active:scale-95 transition-all shadow-lg border border-white/25 dark:border-white/50 cursor-pointer"

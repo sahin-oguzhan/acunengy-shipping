@@ -48,19 +48,14 @@ export default async function Home({ params }) {
 
       <Industries dict={dict.industries} locale={locale} wpData={wpData} />
 
-      {/* Navbar'daki 'fleet' ID'si ile eşleşir */}
       <section id="fleet">
         <FleetOperations dict={dict.fleet} locale={locale} wpData={wpData} />
       </section>
 
-      <WhyChooseUs dict={dict.whyChooseUs} locale={locale} wpData={wpData} />
-
-      {/* Navbar'daki 'news' (Insights) ID'si ile eşleşir */}
       <section id="news">
         <News dict={dict.insights} locale={locale} wpData={wpData} />
       </section>
 
-      {/* Navbar'daki 'contact' ID'si ile eşleşir */}
       <section id="contact">
         <Contact dict={dict.contact} wpData={wpData} />
       </section>

@@ -1,148 +1,238 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import FadeIn from '@/components/ui/FadeIn';
 
 export default function Services({ dict, locale, wpData }) {
-  const [isPaused, setIsPaused] = useState(false);
+  const [isHovering, setIsHovering] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragDistance, setDragDistance] = useState(0);
 
-  const displayBadge =
-    wpData?.servicesBadge || dict?.badge || 'CORE COMPETENCIES';
-  const displayTitle = wpData?.servicesTitle || dict?.title || 'Core Services';
-  const displayDesc =
-    wpData?.servicesDesc ||
-    dict?.description ||
-    'Providing specialized maritime and logistics solutions across global trade corridors.';
-  const displayBtnLearnMore =
-    wpData?.servicesBtn || dict?.btnLearnMore || 'LEARN MORE';
+  const sliderRef = useRef(null);
+  const cursorRef = useRef(null);
 
-  const wpServices = (wpData?.servicesList || []).filter(
-    (item) => item.title && item.title.trim() !== '',
-  );
+  const [startX, setStartX] = useState(0);
+  const [lastX, setLastX] = useState(0);
 
-  const fallbackServices = [
-    {
-      icon: 'anchor',
-      title: dict?.srv1Title || 'Ship Agency & Husbandry',
-      description:
-        dict?.srv1Desc ||
-        'Full port agency, crew changes, bunkering, and round-the-clock husbandry services.',
-    },
-    {
-      icon: 'directions_boat',
-      title: dict?.srv2Title || 'Project Cargo Logistics',
-      description:
-        dict?.srv2Desc ||
-        'End-to-end management for complex infrastructure, energy, and heavy cargo worldwide.',
-    },
-    {
-      icon: 'precision_manufacturing',
-      title: dict?.srv3Title || 'Heavy Lift Engineering',
-      description:
-        dict?.srv3Desc ||
-        'Specialized marine engineering and transport for out-of-gauge ultra-heavy loads.',
-    },
-    {
-      icon: 'wind_power',
-      title: dict?.srv4Title || 'Offshore Marine Support',
-      description:
-        dict?.srv4Desc ||
-        'Supply vessel chartering, offshore platform logistics, and subsea equipment support.',
-    },
-    {
-      icon: 'architecture',
-      title: dict?.srv5Title || 'Chartering & Broking',
-      description:
-        dict?.srv5Desc ||
-        'Custom vessel chartering solutions for dry bulk, breakbulk, and specialized project shipments.',
-    },
-    {
-      icon: 'support_agent',
-      title: dict?.srv6Title || '24/7 Operations Desk',
-      description:
-        dict?.srv6Desc ||
-        'Dedicated emergency and operational support team active across global time zones.',
-    },
-  ];
+  // 1. ACF Başlık Bilgileri
+  const headerData = wpData?.pageFields?.servicesHeaderGroup;
+  const displayBadge = headerData?.badge || '';
+  const displayTitle = headerData?.title || '';
+  const displayDesc = headerData?.description || '';
+  const displayBtnLearnMore = headerData?.btnText || 'LEARN MORE';
 
-  const finalServices =
-    wpServices.length > 0
-      ? wpServices.map((item) => ({
-          icon: item.icon || 'anchor',
-          title: item.title,
-          description: item.desc || item.description,
-        }))
-      : fallbackServices;
+  // 2. Hizmet Kartlarını Hazırlama
+  const rawWpServices = wpData?.servicesList || [];
+  const finalServices = rawWpServices
+    .filter((item) => item.title && item.title.trim() !== '')
+    .map((item) => ({
+      id: item.id,
+      icon: item.serviceFields?.iconName || 'anchor',
+      title: item.title,
+      description: item.serviceFields?.shortDesc || '',
+    }));
 
-  const duplicatedServices = [
-    ...finalServices,
-    ...finalServices,
-    ...finalServices,
-  ];
+  // Sonsuz Döngü Garantisi: Ekranın dolması için ana listeyi en az 6 karta tamamlıyoruz
+  let paddedServices = [...finalServices];
+  if (paddedServices.length > 0) {
+    while (paddedServices.length < 6) {
+      paddedServices = [...paddedServices, ...finalServices];
+    }
+  }
+
+  // Kesintisiz döngü (sol, orta, sağ) için 3 eşit sete bölüyoruz
+  const duplicatedServices =
+    paddedServices.length > 0
+      ? [...paddedServices, ...paddedServices, ...paddedServices]
+      : [];
+
+  // SINIR KONTROLÜ: En sağa veya en sola dayandığında çaktırmadan ortadaki sete ışınlar
+  const checkLoopBoundaries = (slider) => {
+    if (!slider || duplicatedServices.length === 0) return;
+    const singleSetWidth = slider.scrollWidth / 3;
+
+    if (slider.scrollLeft <= 5) {
+      slider.scrollLeft += singleSetWidth;
+    } else if (slider.scrollLeft >= singleSetWidth * 2 - 5) {
+      slider.scrollLeft -= singleSetWidth;
+    }
+  };
+
+  // İLK YÜKLEME: Başlangıçta kaydırmayı ortadaki setin başına al
+  useEffect(() => {
+    if (sliderRef.current && duplicatedServices.length > 0) {
+      const timeout = setTimeout(() => {
+        if (sliderRef.current) {
+          const singleSetWidth = sliderRef.current.scrollWidth / 3;
+          sliderRef.current.scrollLeft = singleSetWidth;
+        }
+      }, 100); // DOM'un tam yerleşmesi için minik gecikme
+      return () => clearTimeout(timeout);
+    }
+  }, [wpData, finalServices.length]);
+
+  // ÖZEL İMLEÇ TAKİBİ
+  useEffect(() => {
+    const moveCursor = (e) => {
+      if (cursorRef.current) {
+        cursorRef.current.style.transform = `translate3d(${e.clientX - 32}px, ${e.clientY - 32}px, 0)`;
+      }
+    };
+    window.addEventListener('mousemove', moveCursor, { passive: true });
+    return () => window.removeEventListener('mousemove', moveCursor);
+  }, []);
+
+  // OTOMATİK KAYDIRMA
+  useEffect(() => {
+    const slider = sliderRef.current;
+    if (!slider || finalServices.length === 0) return;
+
+    let animationId;
+    const step = () => {
+      if (!isDragging && !isHovering) {
+        slider.scrollLeft += 1;
+        checkLoopBoundaries(slider);
+      }
+      animationId = requestAnimationFrame(step);
+    };
+
+    animationId = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(animationId);
+  }, [isHovering, isDragging, finalServices.length]);
+
+  // MANUEL SÜRÜKLEME (Drag & Drop)
+  const handleMouseDown = (e) => {
+    if (finalServices.length === 0) return;
+    setIsDragging(true);
+    setDragDistance(0);
+    setStartX(e.pageX);
+    setLastX(e.pageX);
+  };
+
+  const handleMouseMoveDrag = (e) => {
+    if (!isDragging || finalServices.length === 0 || !sliderRef.current) return;
+    e.preventDefault();
+
+    const x = e.pageX;
+    const walkDelta = (x - lastX) * 1.5; // Sürükleme hızı çarpanı
+
+    sliderRef.current.scrollLeft -= walkDelta;
+    setLastX(x);
+    setDragDistance((prev) => prev + Math.abs(walkDelta));
+
+    checkLoopBoundaries(sliderRef.current);
+  };
+
+  if (!displayTitle && !displayBadge && finalServices.length === 0) {
+    return null;
+  }
 
   return (
-    <section className="py-28 bg-customBg border-t border-customBorder/50 relative overflow-hidden">
+    <section className="py-24 md:py-28 bg-customBg relative overflow-hidden">
+      {/* İMLEÇ WIDGET'I */}
+      <div
+        ref={cursorRef}
+        className="fixed top-0 left-0 pointer-events-none z-[100] will-change-transform"
+        style={{
+          opacity: isHovering && finalServices.length > 0 ? 1 : 0,
+          transition: 'opacity 0.3s ease',
+        }}
+      >
+        <div
+          className={`w-16 h-16 rounded-full flex items-center justify-center font-mono font-black text-lg transition-all duration-300 ease-out ${
+            isDragging
+              ? 'bg-customText text-customBg scale-90 shadow-2xl'
+              : 'bg-customAccent text-white backdrop-blur-sm shadow-xl scale-100'
+          }`}
+        >
+          &lt; &gt;
+        </div>
+      </div>
+
       <div className="absolute inset-0 bg-customSurface/20 pointer-events-none" />
 
+      {/* BAŞLIK VE AÇIKLAMA */}
       <FadeIn direction="up">
         <div className="text-center max-w-3xl mx-auto mb-16 md:mb-20 px-6 relative z-10">
-          <span className="inline-block font-mono text-xs md:text-sm text-customAccent tracking-widest uppercase mb-4 px-3.5 py-1.5 rounded-full bg-customAccent/10 border border-customAccent/20 font-semibold">
-            {displayBadge}
-          </span>
-          <h2 className="text-3xl md:text-5xl text-customText font-black mb-6 font-heading tracking-tight">
-            {displayTitle}
-          </h2>
-          <p className="text-customMuted text-base md:text-lg leading-relaxed font-normal">
-            {displayDesc}
-          </p>
+          {displayBadge && (
+            <span className="inline-block font-mono text-xs md:text-sm text-customAccent tracking-widest uppercase mb-4 px-3.5 py-1.5 rounded-full bg-customAccent/10 border border-customAccent/20 font-semibold">
+              {displayBadge}
+            </span>
+          )}
+          {displayTitle && (
+            <h2 className="text-3xl md:text-5xl text-customText font-black mb-6 font-heading tracking-tight">
+              {displayTitle}
+            </h2>
+          )}
+          {displayDesc && (
+            <p className="text-customMuted text-base md:text-lg leading-relaxed font-normal">
+              {displayDesc}
+            </p>
+          )}
         </div>
       </FadeIn>
 
-      {/* Yatay Kayan Döngü Alanı */}
-      <div className="relative w-full overflow-hidden flex whitespace-nowrap py-4">
-        <div className="absolute left-0 inset-y-0 w-32 bg-gradient-to-r from-customBg to-transparent z-10 pointer-events-none" />
-        <div className="absolute right-0 inset-y-0 w-32 bg-gradient-to-l from-customBg to-transparent z-10 pointer-events-none" />
+      {/* KAYDIRMA ALANI */}
+      {finalServices.length > 0 && (
+        <div className="relative w-full overflow-hidden flex whitespace-nowrap py-6">
+          <div className="absolute left-0 inset-y-0 w-24 md:w-40 bg-gradient-to-r from-customBg to-transparent z-30 pointer-events-none" />
+          <div className="absolute right-0 inset-y-0 w-24 md:w-40 bg-gradient-to-l from-customBg to-transparent z-30 pointer-events-none" />
 
-        <div
-          className="flex gap-8 animate-services-scroll px-4"
-          onMouseEnter={() => setIsPaused(true)}
-          onMouseLeave={() => setIsPaused(false)}
-          style={{ animationPlayState: isPaused ? 'paused' : 'running' }}
-        >
-          {duplicatedServices.map((service, index) => (
-            <div
-              key={index}
-              className="w-[340px] md:w-[380px] bg-customSurface/60 backdrop-blur-xl p-8 md:p-10 border border-customBorder/80 hover:border-customAccent/50 transition-all duration-300 group/card shadow-lg hover:shadow-2xl rounded-3xl flex flex-col justify-between shrink-0 whitespace-normal"
-            >
-              <div>
-                <div className="p-3.5 bg-customBg/80 border border-customBorder w-fit rounded-2xl mb-6 group-hover/card:border-customAccent/40 group-hover/card:bg-customAccent/15 transition-all duration-300 shadow-sm">
-                  <span className="material-symbols-outlined text-3xl text-customAccent block group-hover/card:scale-110 transition-transform duration-300">
-                    {service.icon}
-                  </span>
+          {/* Slider Kapsayıcısı */}
+          <div
+            ref={sliderRef}
+            className="flex gap-8 px-4 w-full overflow-x-auto touch-pan-x [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] py-2 cursor-none select-none relative z-20"
+            onMouseEnter={() => setIsHovering(true)}
+            onMouseLeave={() => {
+              setIsHovering(false);
+              setIsDragging(false);
+            }}
+            onMouseMove={handleMouseMoveDrag}
+            onMouseDown={handleMouseDown}
+            onMouseUp={() => setIsDragging(false)}
+            onScroll={(e) => checkLoopBoundaries(e.currentTarget)}
+          >
+            {duplicatedServices.map((service, index) => (
+              <div
+                key={`${service.id || 'srv'}-${index}`}
+                className="w-[300px] sm:w-[340px] md:w-[380px] bg-customSurface/60 backdrop-blur-xl p-8 md:p-10 border border-customBorder/80 hover:border-customAccent/50 transition-all duration-300 group/card shadow-lg hover:shadow-2xl rounded-3xl flex flex-col justify-between shrink-0 whitespace-normal"
+              >
+                <div>
+                  <div className="p-3.5 bg-customBg/80 border border-customBorder w-fit rounded-2xl mb-6 group-hover/card:border-customAccent/40 group-hover/card:bg-customAccent/15 transition-all duration-300 shadow-sm">
+                    <span className="material-symbols-outlined text-3xl text-customAccent block group-hover/card:scale-110 transition-transform duration-300">
+                      {service.icon}
+                    </span>
+                  </div>
+
+                  <h3 className="text-xl font-bold font-heading text-customText mb-4 tracking-tight">
+                    {service.title}
+                  </h3>
+
+                  <p className="text-customMuted mb-8 text-sm md:text-base leading-relaxed font-normal">
+                    {service.description}
+                  </p>
                 </div>
 
-                <h3 className="text-xl font-bold font-heading text-customText mb-4 tracking-tight">
-                  {service.title}
-                </h3>
-
-                <p className="text-customMuted mb-8 text-sm md:text-base leading-relaxed font-normal">
-                  {service.description}
-                </p>
+                <a
+                  href="#contact"
+                  draggable={false}
+                  onClick={(e) => {
+                    if (dragDistance > 10) e.preventDefault();
+                  }}
+                  className="font-mono text-xs text-customText font-extrabold flex items-center gap-2 group-hover/card:gap-3.5 group-hover/card:text-customAccent transition-all uppercase tracking-wider w-fit cursor-none"
+                >
+                  {displayBtnLearnMore}{' '}
+                  <span className="material-symbols-outlined text-sm transition-transform duration-300 group-hover/card:translate-x-1">
+                    arrow_forward
+                  </span>
+                </a>
               </div>
-
-              <a
-                href="#contact"
-                className="font-mono text-xs text-customText font-extrabold flex items-center gap-2 group-hover/card:gap-3.5 group-hover/card:text-customAccent transition-all uppercase tracking-wider w-fit"
-              >
-                {displayBtnLearnMore}{' '}
-                <span className="material-symbols-outlined text-sm transition-transform duration-300 group-hover/card:translate-x-1">
-                  arrow_forward
-                </span>
-              </a>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
+      )}
+
+      <div className="absolute bottom-0 inset-x-0 h-12 bg-gradient-to-t from-customBg to-transparent pointer-events-none z-10" />
     </section>
   );
 }

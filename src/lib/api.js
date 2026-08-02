@@ -1,170 +1,112 @@
-// WordPress API adresi
-const API_URL = process.env.NEXT_PUBLIC_WORDPRESS_API_URL;
+const API_URL =
+  process.env.NEXT_PUBLIC_WORDPRESS_API_URL ||
+  'https://dev-acunengy-demo.pantheonsite.io/graphql';
 
-export async function getHomePageData(locale = 'en') {
+async function fetchAPI(query = '', { variables } = {}) {
+  const headers = { 'Content-Type': 'application/json' };
+
   try {
-    const slug = locale === 'tr' ? 'ana-sayfa' : 'home';
-
-    const res = await fetch(`${API_URL}/pages?slug=${slug}&_embed`, {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ query, variables }),
       next: { revalidate: 10 },
     });
 
-    if (!res.ok) throw new Error('Ana sayfa verileri alınamadı');
-
-    const pages = await res.json();
-
-    if (pages.length > 0) {
-      const page = pages[0];
-      const acf = page.acf || {};
-
-      return {
-        // Hero
-        heroBadge: acf.hero_badge,
-        heroTitle: acf.hero_title,
-        heroTitle2: acf.hero_title2,
-        heroSubtitle: acf.hero_subtitle,
-        heroBtnQuote: acf.hero_btn_quote,
-        heroBtnServices: acf.hero_btn_services,
-
-        // About
-        aboutBadge: acf.about_badge,
-        aboutTitle1: acf.about_title1,
-        aboutTitle2: acf.about_title2,
-        aboutDesc1: acf.about_desc1,
-        aboutDesc2: acf.about_desc2,
-
-        // Services
-        servicesBadge: acf.services_badge,
-        servicesTitle: acf.services_title,
-        servicesDesc: acf.services_desc,
-        servicesBtn: acf.services_btn,
-        servicesList: [
-          {
-            icon: 'anchor',
-            title: acf.service_1_title,
-            desc: acf.service_1_desc,
-          },
-          {
-            icon: 'directions_boat',
-            title: acf.service_2_title,
-            desc: acf.service_2_desc,
-          },
-          {
-            icon: 'precision_manufacturing',
-            title: acf.service_3_title,
-            desc: acf.service_3_desc,
-          },
-          {
-            icon: 'architecture',
-            title: acf.service_4_title,
-            desc: acf.service_4_desc,
-          },
-          {
-            icon: 'wind_power',
-            title: acf.service_5_title,
-            desc: acf.service_5_desc,
-          },
-          {
-            icon: 'support_agent',
-            title: acf.service_6_title,
-            desc: acf.service_6_desc,
-          },
-        ],
-        // Stats
-        statsList: [
-          { value: acf.stat_1_value, label: acf.stat_1_label },
-          { value: acf.stat_2_value, label: acf.stat_2_label },
-          { value: acf.stat_3_value, label: acf.stat_3_label },
-          { value: acf.stat_4_value, label: acf.stat_4_label },
-        ],
-        // Industries
-        industriesBadge: acf.industries_badge,
-        industriesTitle: acf.industries_title,
-        industriesDesc: acf.industries_desc,
-        industriesList: [
-          {
-            icon: 'directions_boat',
-            title: acf.industry_1_title,
-            desc: acf.industry_1_desc,
-          },
-          {
-            icon: 'precision_manufacturing',
-            title: acf.industry_2_title,
-            desc: acf.industry_2_desc,
-          },
-          {
-            icon: 'tsunami',
-            title: acf.industry_3_title,
-            desc: acf.industry_3_desc,
-          },
-          {
-            icon: 'factory',
-            title: acf.industry_4_title,
-            desc: acf.industry_4_desc,
-          },
-        ],
-        // EliteAdvantages
-        advBadge: acf.adv_badge,
-        advTitle1: acf.adv_title1,
-        advTitle2: acf.adv_title2,
-        advantagesList: [
-          { icon: 'schedule', title: acf.adv_1_title, desc: acf.adv_1_desc },
-          { icon: 'speed', title: acf.adv_2_title, desc: acf.adv_2_desc },
-          {
-            icon: 'verified_user',
-            title: acf.adv_3_title,
-            desc: acf.adv_3_desc,
-          },
-        ],
-        // Insights
-        insightsBadge: acf.insights_badge,
-        insightsTitle: acf.insights_title,
-        insightsDesc: acf.insights_desc,
-        //Contact
-        contactBadge: acf.contact_badge,
-        contactTitle: acf.contact_title,
-        contactDesc: acf.contact_desc,
-        contactPhone: acf.contact_phone,
-        contactEmail: acf.contact_email,
-        contactAddress: acf.contact_address,
-        contactWhatsapp: acf.contact_whatsapp,
-        //Header-Footer
-        globalLogo: acf.global_logo,
-        nav1Label: acf.nav_1_label,
-        nav1Url: acf.nav_1_url,
-        nav2Label: acf.nav_2_label,
-        nav2Url: acf.nav_2_url,
-        nav3Label: acf.nav_3_label,
-        nav3Url: acf.nav_3_url,
-        nav4Label: acf.nav_4_label,
-        nav4Url: acf.nav_4_url,
-
-        footerLogo: acf.footer_logo,
-        footerDesc: acf.footer_desc,
-        socialLinkedin: acf.social_linkedin,
-        socialTwitter: acf.social_twitter,
-        socialInstagram: acf.social_instagram,
-        footerRights: acf.footer_rights,
-      };
+    const json = await res.json();
+    if (json.errors) {
+      console.error(
+        'GraphQL Hata Detayı:',
+        JSON.stringify(json.errors, null, 2),
+      );
+      return null;
     }
-    return null;
+    return json.data;
   } catch (error) {
-    console.error('API Error (getHomePageData):', error);
+    console.error('Fetch API Error:', error);
     return null;
   }
 }
 
-export async function getPosts(perPage = 3) {
-  try {
-    const res = await fetch(`${API_URL}/posts?per_page=${perPage}&_embed`, {
-      next: { revalidate: 10 },
-    });
+export async function getHomePageData(locale = 'tr') {
+  const currentLang = locale.toLowerCase();
+  const langEnum = locale.toUpperCase();
 
-    if (!res.ok) throw new Error('WordPress yazıları alınamadı');
+  const query = `
+    query GetHomePageData($language: LanguageCodeFilterEnum!) {
+      pages(where: { language: $language }, first: 50) {
+        nodes {
+          id
+          title
+          slug
+          uri
+          homepageFields {
+            heroGroup {
+              heroBadge
+              heroTitle
+              heroSubtitle
+              heroBtnText
+              heroVideoUrl
+            }
+            servicesHeaderGroup {
+              badge
+              title
+              description
+              btnText
+            }
+          }
+        }
+      }
+      services(where: { language: $language }, first: 100) {
+        nodes {
+          id
+          title
+          slug
+          uri
+          serviceFields {
+            iconName
+            shortDesc
+          }
+        }
+      }
+    }
+  `;
 
-    return await res.json();
-  } catch (error) {
-    console.error('API Error (getPosts):', error);
-    return [];
+  const data = await fetchAPI(query, { variables: { language: langEnum } });
+
+  const allPages = data?.pages?.nodes || [];
+  const rawServices = data?.services?.nodes || [];
+
+  // Dile göre doğru Ana Sayfa Node'unu seçiyoruz
+  let homeNode = allPages.find((p) => {
+    if (currentLang === 'en') {
+      return p.slug === 'home' || p.uri?.includes('/en/');
+    }
+    return (
+      p.slug === 'ana-sayfa' ||
+      p.slug === 'anasayfa' ||
+      !p.uri?.includes('/en/')
+    );
+  });
+
+  if (!homeNode && allPages.length > 0) {
+    homeNode = allPages[0];
   }
+
+  // Çift güvenlikli Hizmet listesi süzgeci
+  const filteredServices = rawServices.filter((service) => {
+    const uri = service.uri || '';
+    if (currentLang === 'en') {
+      return uri.includes('/en/');
+    }
+    return !uri.includes('/en/');
+  });
+
+  return {
+    pageFields: homeNode?.homepageFields || null,
+    servicesList: filteredServices,
+    fleetList: [],
+    industriesList: [],
+    specializationsList: [],
+  };
 }

@@ -1,13 +1,12 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { useInView, useMotionValue, useSpring } from 'framer-motion';
+import { useInView, animate } from 'framer-motion';
 
 export default function AnimatedCounter({ value }) {
   const ref = useRef(null);
 
   const stringValue = String(value);
-
   const match = stringValue.match(/(\d+)/);
   const numericString = match ? match[1] : '0';
   const numericValue = parseInt(numericString, 10);
@@ -17,27 +16,23 @@ export default function AnimatedCounter({ value }) {
     match ? match.index + numericString.length : 0,
   );
 
-  const motionValue = useMotionValue(0);
-  const springValue = useSpring(motionValue, {
-    damping: 30,
-    stiffness: 100,
-  });
-
   const isInView = useInView(ref, { once: true, margin: '-50px' });
 
   useEffect(() => {
-    if (isInView) {
-      motionValue.set(numericValue);
-    }
-  }, [isInView, motionValue, numericValue]);
+    if (isInView && ref.current) {
+      const controls = animate(0, numericValue, {
+        duration: 1.2,
+        ease: [0.16, 1, 0.3, 1],
+        onUpdate(latest) {
+          if (ref.current) {
+            ref.current.textContent = `${prefix}${Math.floor(latest)}${suffix}`;
+          }
+        },
+      });
 
-  useEffect(() => {
-    return springValue.on('change', (latest) => {
-      if (ref.current) {
-        ref.current.textContent = `${prefix}${Math.floor(latest)}${suffix}`;
-      }
-    });
-  }, [springValue, prefix, suffix]);
+      return () => controls.stop();
+    }
+  }, [isInView, numericValue, prefix, suffix]);
 
   return <span ref={ref}>{value}</span>;
 }

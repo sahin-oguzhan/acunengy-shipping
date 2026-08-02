@@ -2,6 +2,7 @@ import { IBM_Plex_Sans, Space_Grotesk } from 'next/font/google';
 import '../globals.css';
 import { ThemeProvider } from '@/components/layout/ThemeProvider';
 import Navbar from '@/components/layout/Navbar';
+import Preloader from '@/components/ui/Preloader';
 import { getDictionary } from '@/dictionaries/getDictionary';
 import { getHomePageData } from '@/lib/api';
 
@@ -37,11 +38,12 @@ export default async function RootLayout({ children, params }) {
           rel="stylesheet"
         />
       </head>
-      {/* pt-24 kaldırıldı. Sayfa tam en üstten başlayacak. */}
       <body
         className={`${ibmPlex.variable} ${spaceGrotesk.variable} font-sans antialiased min-h-screen flex flex-col`}
       >
         <ThemeProvider>
+          <Preloader />
+
           <Navbar dict={dict.navbar} wpData={wpData} />
           {children}
         </ThemeProvider>

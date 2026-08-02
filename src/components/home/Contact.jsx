@@ -236,8 +236,8 @@ export default function Contact({ dict, wpData }) {
                 className={`w-full py-4 font-mono text-xs uppercase tracking-widest transition-all font-extrabold rounded-2xl flex justify-center items-center gap-2 shadow-lg cursor-pointer
                   ${
                     isSubmitting
-                      ? 'bg-customMuted text-slate-950 cursor-not-allowed'
-                      : 'bg-customAccent text-slate-950 hover:opacity-90 shadow-[0_0_20px_rgba(56,189,248,0.3)]'
+                      ? 'bg-customMuted text-white cursor-not-allowed'
+                      : 'bg-customAccent text-white hover:opacity-90 shadow-[0_0_20px_rgba(56,189,248,0.3)]'
                   }`}
               >
                 {isSubmitting
