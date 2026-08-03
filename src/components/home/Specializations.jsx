@@ -1,10 +1,14 @@
 'use client';
 
 import React, { useState } from 'react';
+import { usePathname } from 'next/navigation';
 import FadeIn from '@/components/ui/FadeIn';
 
 export default function Specializations({ dict, locale, wpData }) {
   const [hoveredIndex, setHoveredIndex] = useState(0);
+
+  const pathname = usePathname();
+  const currentLocale = pathname?.startsWith('/en') ? 'en' : 'tr';
 
   // 1. ACF Başlık Bilgileri
   const headerData = wpData?.pageFields?.specializationsHeaderGroup;
@@ -12,7 +16,7 @@ export default function Specializations({ dict, locale, wpData }) {
   const displayTitle = headerData?.title || '';
   const displayDesc = headerData?.description || '';
 
-  // 2. Doğrudan WordPress CPT Verisi
+  // 2. Doğrudan WordPress CPT Verisi (Gerçek ACF Şemana Göre Eşlendi)
   const rawWpSpecs = wpData?.specializationsList || [];
   const sectors = rawWpSpecs.map((item, index) => ({
     id: item.id || `spec-${index}`,
@@ -26,10 +30,31 @@ export default function Specializations({ dict, locale, wpData }) {
     icon: item.specFields?.iconName || 'precision_manufacturing',
   }));
 
+  // Smooth Scroll Kaydırma Fonksiyonu
+  const handleBriefClick = (e) => {
+    e.preventDefault();
+    const contactSection = document.getElementById('contact');
+    if (contactSection) {
+      const offset = 90;
+      const bodyRect = document.body.getBoundingClientRect().top;
+      const elementRect = contactSection.getBoundingClientRect().top;
+      const elementPosition = elementRect - bodyRect;
+      const offsetPosition = elementPosition - offset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth',
+      });
+    }
+  };
+
   // Eğer WordPress'ten ne başlık ne de kart verisi geldiyse bileşeni tamamen gizle
   if (!displayTitle && !displayBadge && sectors.length === 0) {
     return null;
   }
+
+  // Buton Metni Dil Tanımı (TR: BİLGİ AL / EN: BRIEF)
+  const briefBtnLabel = currentLocale === 'tr' ? 'BİLGİ AL' : 'BRIEF';
 
   return (
     <section className="py-28 px-6 md:px-16 bg-customBg border-t border-customBorder/80 transition-colors duration-300 relative overflow-hidden">
@@ -62,6 +87,11 @@ export default function Specializations({ dict, locale, wpData }) {
           <div className="flex flex-col lg:flex-row gap-4 h-auto lg:h-[560px]">
             {sectors.map((sector, index) => {
               const isExpanded = hoveredIndex === index;
+
+              // Dinamik Sektör Kodu (Paneldeki 'code' basılır, boşsa '01 / SECTOR' basılır)
+              const formattedIndex = String(index + 1).padStart(2, '0');
+              const displayCode = sector.code || `${formattedIndex} / SECTOR`;
+
               return (
                 <div
                   key={sector.id}
@@ -82,7 +112,7 @@ export default function Specializations({ dict, locale, wpData }) {
                   {/* GRADYAN MASKESİ */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/65 to-black/30" />
 
-                  {/* ÜST BUTONLAR */}
+                  {/* ÜST BUTONLAR VE KATEGORİ ROZETİ */}
                   <div className="absolute top-6 left-6 right-6 z-20 flex items-center justify-between">
                     {sector.category && (
                       <span className="font-mono text-xs text-white font-bold uppercase tracking-widest bg-black/70 px-4 py-1.5 rounded-full border border-white/20 backdrop-blur-md shadow-md">
@@ -98,11 +128,11 @@ export default function Specializations({ dict, locale, wpData }) {
 
                   {/* İÇERİK */}
                   <div className="relative z-10 text-white">
-                    {sector.code && (
-                      <span className="font-mono text-xs text-gray-300 block mb-2 font-semibold tracking-wider">
-                        {sector.code}
-                      </span>
-                    )}
+                    {/* SEKTÖR KODU / NUMARATÖR (code alanından çekilir) */}
+                    <span className="font-mono text-xs text-[#38bdf8] block mb-2 font-bold tracking-widest uppercase drop-shadow-sm">
+                      {displayCode}
+                    </span>
+
                     <h3 className="text-2xl md:text-3xl font-black text-white font-heading mb-3 tracking-tight drop-shadow-md">
                       {sector.title}
                     </h3>
@@ -137,9 +167,10 @@ export default function Specializations({ dict, locale, wpData }) {
 
                       <a
                         href="#contact"
+                        onClick={handleBriefClick}
                         className="inline-flex items-center gap-2 font-mono text-xs text-white bg-white/10 hover:bg-white hover:text-slate-950 border border-white/30 px-4 py-2.5 rounded-xl transition-all font-extrabold uppercase tracking-wider backdrop-blur-md shadow-lg"
                       >
-                        Brief
+                        {briefBtnLabel}
                         <span className="material-symbols-outlined text-sm">
                           arrow_forward
                         </span>

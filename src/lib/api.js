@@ -85,6 +85,29 @@ export async function getHomePageData(locale = 'tr') {
               address
               whatsapp
             }
+            aboutGroup {
+              badge
+              title
+              description
+              card1Title
+              card1Desc
+              card2Title
+              card2Desc
+              metric1Value
+              metric1Label
+              metric2Value
+              metric2Label
+            }
+            statsGroup {
+              stat1Val
+              stat1Lbl
+              stat2Val
+              stat2Lbl
+              stat3Val
+              stat3Lbl
+              stat4Val
+              stat4Lbl
+            } 
           }
         }
       }
@@ -103,7 +126,7 @@ export async function getHomePageData(locale = 'tr') {
         }
       }
 
-      # 3. Uzmanlıklar CPT
+      # 3. Uzmanlıklar CPT (%100 Gerçek Şema Uyumlu)
       specializations(where: { language: $language }, first: 20) {
         nodes {
           id
@@ -116,14 +139,17 @@ export async function getHomePageData(locale = 'tr') {
             }
           }
           specFields {
-            kategori
-            ikonAdi
+            category
+            code
             description
+            iconName
+            statsValue
+            statsLabel
           }
         }
       }
 
-      # 4. Sektörler CPT
+      # 4. Sektörler CPT (industryFields Eklendi)
       industries(where: { language: $language }, first: 20) {
         nodes {
           id
@@ -134,6 +160,10 @@ export async function getHomePageData(locale = 'tr') {
             node {
               sourceUrl
             }
+          }
+          industryFields {
+            tag
+            description
           }
         }
       }
@@ -158,8 +188,8 @@ export async function getHomePageData(locale = 'tr') {
         }
       }
 
-      # 6. WordPress Standart Posts (Yazılar)
-      posts(where: { language: $language }, first: 3) {
+      # 6. WordPress Standart Posts (Limit 20'ye çıkarıldı)
+      posts(where: { language: $language }, first: 20) {
         nodes {
           id
           title
@@ -221,9 +251,11 @@ export async function getHomePageData(locale = 'tr') {
     currentLang === 'en' ? f.uri?.includes('/en/') : !f.uri?.includes('/en/'),
   );
 
-  const filteredPosts = rawPosts.filter((p) =>
-    currentLang === 'en' ? p.uri?.includes('/en/') : !p.uri?.includes('/en/'),
-  );
+  const filteredPosts = rawPosts
+    .filter((p) =>
+      currentLang === 'en' ? p.uri?.includes('/en/') : !p.uri?.includes('/en/'),
+    )
+    .slice(0, 3);
 
   return {
     pageFields: homeNode?.homepageFields || null,

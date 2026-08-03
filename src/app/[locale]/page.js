@@ -23,19 +23,16 @@ export default async function Home({ params }) {
 
   return (
     <main className="flex flex-col w-full">
-      {/* Navbar'daki 'hero' ID'si ile eşleşir */}
       <section id="hero">
-        <Hero dict={dict.hero} locale={locale} />
+        <Hero dict={dict.hero} locale={locale} wpData={wpData} />
       </section>
 
-      {/* Navbar'daki 'about' ID'si ile eşleşir */}
       <section id="about">
         <About dict={dict.about} locale={locale} wpData={wpData} />
       </section>
 
       <Stats dict={dict.stats} locale={locale} wpData={wpData} />
 
-      {/* Navbar'daki 'services' ID'si ile eşleşir */}
       <section id="services">
         <Services dict={dict.services} locale={locale} wpData={wpData} />
       </section>

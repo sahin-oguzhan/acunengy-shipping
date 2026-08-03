@@ -13,8 +13,10 @@ export default function Navbar({ dict, locale }) {
   const pathname = usePathname();
   const currentLocale = pathname?.startsWith('/en') ? 'en' : 'tr';
 
+  // 1. ABOUT HAKKIMIZDA EKLENDİ
   const navItems = [
     { id: 'hero', label: currentLocale === 'tr' ? 'ANASAYFA' : 'HOME' },
+    { id: 'about', label: currentLocale === 'tr' ? 'HAKKIMIZDA' : 'ABOUT' },
     {
       id: 'services',
       label: currentLocale === 'tr' ? 'HİZMETLER' : 'SERVICES',
@@ -108,6 +110,7 @@ export default function Navbar({ dict, locale }) {
           })}
         </div>
 
+        {/* 2. ORTA KISIM: Logo */}
         <a
           href="#hero"
           onClick={(e) => scrollToSection(e, 'hero')}
@@ -148,7 +151,7 @@ export default function Navbar({ dict, locale }) {
 
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="text-customText p-1 text-2xl"
+            className="text-customText p-1 text-2xl cursor-pointer"
             aria-label="Toggle Menu"
           >
             {isMobileMenuOpen ? '✕' : '☰'}

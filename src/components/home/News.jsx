@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import FadeIn from '@/components/ui/FadeIn';
 
 export default function News({ dict, locale, wpData }) {
@@ -9,13 +10,13 @@ export default function News({ dict, locale, wpData }) {
   const displayBadge = headerData?.badge || '';
   const displayTitle = headerData?.title || '';
   const displayDesc = headerData?.description || '';
-  const displayBtn = headerData?.btnText;
+  const displayBtn =
+    headerData?.btnText || (locale === 'tr' ? 'TÜM HABERLER' : 'VIEW ALL NEWS');
 
   // 2. Doğrudan WordPress Posts (Yazılar) Verisi
   const rawPosts = wpData?.newsList || [];
 
   const finalPosts = rawPosts.map((post, index) => {
-    // Tarihi 'OCT 28, 2026' formatına otomatik dönüştürme
     const formattedDate = post.date
       ? new Date(post.date)
           .toLocaleDateString(locale === 'en' ? 'en-US' : 'tr-TR', {
@@ -26,16 +27,17 @@ export default function News({ dict, locale, wpData }) {
           .toUpperCase()
       : '';
 
-    const firstCategory = post.categories?.nodes?.[0]?.name || 'NEWS';
+    const firstCategory =
+      post.categories?.nodes?.[0]?.name ||
+      (locale === 'tr' ? 'HABERLER' : 'NEWS');
 
     return {
       id: post.id || `post-${index}`,
       title: post.title,
       slug: post.slug,
-      uri: post.uri || `#`,
       date: formattedDate,
       category: firstCategory,
-      readTime: '5 min read',
+      readTime: locale === 'tr' ? '5 dk okuma' : '5 min read',
       image: post.featuredImage?.node?.sourceUrl || '',
     };
   });
@@ -44,6 +46,8 @@ export default function News({ dict, locale, wpData }) {
   if (!displayTitle && !displayBadge && finalPosts.length === 0) {
     return null;
   }
+
+  const readAnalysisText = locale === 'tr' ? 'DETAYLI OKU' : 'READ ANALYSIS';
 
   return (
     <section className="py-28 px-6 md:px-16 bg-customSurface/60 border-t border-customBorder/80 transition-colors duration-300 relative overflow-hidden">
@@ -78,8 +82,8 @@ export default function News({ dict, locale, wpData }) {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
             {finalPosts.map((post, index) => (
               <FadeIn key={post.id} delay={index * 0.1} direction="up">
-                <a
-                  href={post.uri}
+                <Link
+                  href={`/${locale}/${post.slug}`}
                   className="relative h-[480px] rounded-3xl overflow-hidden border border-customBorder/80 bg-slate-950 shadow-2xl flex flex-col justify-between p-8 group cursor-pointer hover:border-customAccent/60 transition-all duration-300 hover:-translate-y-2 block"
                 >
                   {/* ARKA PLAN GÖRSELİ */}
@@ -119,14 +123,14 @@ export default function News({ dict, locale, wpData }) {
 
                     <div className="pt-5 border-t border-white/20 flex items-center justify-between">
                       <span className="font-mono text-xs text-white group-hover:text-[#38bdf8] font-extrabold flex items-center gap-2 transition-all uppercase tracking-wider">
-                        Read Analysis{' '}
+                        {readAnalysisText}{' '}
                         <span className="material-symbols-outlined text-sm group-hover:translate-x-1.5 transition-transform text-[#38bdf8]">
                           arrow_forward
                         </span>
                       </span>
                     </div>
                   </div>
-                </a>
+                </Link>
               </FadeIn>
             ))}
           </div>
@@ -134,15 +138,15 @@ export default function News({ dict, locale, wpData }) {
 
         {/* VIEW ALL / DÜĞME ALANI */}
         <div className="text-center">
-          <a
-            href="/news"
-            className="inline-flex items-center gap-2.5 font-mono text-xs text-customText hover:text-white bg-customBg/80 hover:bg-customAccent  border border-customBorder hover:border-customAccent px-8 py-4 rounded-2xl transition-all font-extrabold uppercase tracking-widest shadow-lg backdrop-blur-xl"
+          <Link
+            href={`/${locale}/news`}
+            className="inline-flex items-center gap-2.5 font-mono text-xs text-customText hover:text-white bg-customBg/80 hover:bg-customAccent border border-customBorder hover:border-customAccent px-8 py-4 rounded-2xl transition-all font-extrabold uppercase tracking-widest shadow-lg backdrop-blur-xl"
           >
             {displayBtn}
             <span className="material-symbols-outlined text-sm">
               arrow_forward
             </span>
-          </a>
+          </Link>
         </div>
       </div>
     </section>

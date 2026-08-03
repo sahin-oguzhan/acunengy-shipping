@@ -66,7 +66,7 @@ export default function Services({ dict, locale, wpData }) {
           const singleSetWidth = sliderRef.current.scrollWidth / 3;
           sliderRef.current.scrollLeft = singleSetWidth;
         }
-      }, 100); // DOM'un tam yerleşmesi için minik gecikme
+      }, 100);
       return () => clearTimeout(timeout);
     }
   }, [wpData, finalServices.length]);
@@ -114,13 +114,36 @@ export default function Services({ dict, locale, wpData }) {
     e.preventDefault();
 
     const x = e.pageX;
-    const walkDelta = (x - lastX) * 1.5; // Sürükleme hızı çarpanı
+    const walkDelta = (x - lastX) * 1.5;
 
     sliderRef.current.scrollLeft -= walkDelta;
     setLastX(x);
     setDragDistance((prev) => prev + Math.abs(walkDelta));
 
     checkLoopBoundaries(sliderRef.current);
+  };
+
+  // İLETİŞİME SMOOTH SCROLL İLE KAYDIRMA FONKSİYONU
+  const handleCardClick = (e) => {
+    if (dragDistance > 10) {
+      e.preventDefault();
+      return;
+    }
+
+    e.preventDefault();
+    const contactSection = document.getElementById('contact');
+    if (contactSection) {
+      const offset = 90;
+      const bodyRect = document.body.getBoundingClientRect().top;
+      const elementRect = contactSection.getBoundingClientRect().top;
+      const elementPosition = elementRect - bodyRect;
+      const offsetPosition = elementPosition - offset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth',
+      });
+    }
   };
 
   if (!displayTitle && !displayBadge && finalServices.length === 0) {
@@ -216,9 +239,7 @@ export default function Services({ dict, locale, wpData }) {
                 <a
                   href="#contact"
                   draggable={false}
-                  onClick={(e) => {
-                    if (dragDistance > 10) e.preventDefault();
-                  }}
+                  onClick={handleCardClick}
                   className="font-mono text-xs text-customText font-extrabold flex items-center gap-2 group-hover/card:gap-3.5 group-hover/card:text-customAccent transition-all uppercase tracking-wider w-fit cursor-none"
                 >
                   {displayBtnLearnMore}{' '}
