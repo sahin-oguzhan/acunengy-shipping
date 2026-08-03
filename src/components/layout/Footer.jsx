@@ -1,7 +1,22 @@
+'use client';
+
 import React from 'react';
+import Link from 'next/link';
 
 export default function Footer({ dict, locale, wpData }) {
   const currentYear = new Date().getFullYear();
+
+  // 1. WordPress ACF İletişim Bilgileri
+  const contactData = wpData?.pageFields?.contactGroup;
+
+  const displayPhone = contactData?.phone || '';
+  const displayEmail = contactData?.email;
+  const displayAddress = contactData?.address;
+  const whatsappUrl = contactData?.whatsapp || '';
+
+  // 2. WordPress'ten Gelen Canlı Hizmetler (Services CPT)
+  const rawServices = wpData?.servicesList || [];
+  const services = rawServices.slice(0, 5); // İlk 5 hizmeti listede göster
 
   return (
     <footer className="bg-slate-950 text-white border-t border-white/10 pt-24 pb-12 transition-colors duration-300 relative overflow-hidden">
@@ -25,16 +40,16 @@ export default function Footer({ dict, locale, wpData }) {
 
           <div className="flex flex-wrap items-center gap-4">
             <a
-              href="tel:+902320000000"
+              href={`tel:${displayPhone.replace(/\s+/g, '')}`}
               className="font-mono text-xs text-white bg-rose-600/90 hover:bg-rose-600 px-5 py-3.5 rounded-2xl font-bold transition-all flex items-center gap-2 uppercase tracking-wider shadow-lg active:scale-95"
             >
               <span className="material-symbols-outlined text-sm">
                 phone_in_talk
               </span>
-              +90 (232) 000 00 00
+              {displayPhone}
             </a>
             <a
-              href="https://wa.me/905000000000"
+              href={whatsappUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="font-mono text-xs text-white bg-emerald-600/90 hover:bg-emerald-600 px-5 py-3.5 rounded-2xl font-bold transition-all flex items-center gap-2 uppercase tracking-wider shadow-lg active:scale-95"
@@ -66,61 +81,66 @@ export default function Footer({ dict, locale, wpData }) {
 
             <div className="pt-2 font-mono text-xs text-gray-300 space-y-2">
               <p className="font-bold text-white">Turkish Global HQ:</p>
-              <p className="text-gray-400">
-                Atatürk Caddesi, No: 180, Alsancak, Izmir / Türkiye
-              </p>
+              <p className="text-gray-400">{displayAddress}</p>
               <p className="text-[#38bdf8] font-semibold pt-1">
-                ops@acunengy.com
+                {displayEmail}
               </p>
             </div>
           </div>
 
-          {/* Kolon 2: Servisler (2 Kolon) */}
+          {/* Kolon 2: Servisler (2 Kolon - Canlı WordPress Verisi) */}
           <div className="lg:col-span-2 space-y-4 lg:pl-4">
             <h4 className="font-mono text-xs text-[#38bdf8] font-bold uppercase tracking-widest">
               Services
             </h4>
             <ul className="space-y-2.5 text-sm text-gray-400 font-medium">
-              <li>
-                <a
-                  href="#services"
-                  className="hover:text-white transition-colors"
-                >
-                  Ship Agency
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#services"
-                  className="hover:text-white transition-colors"
-                >
-                  Project Cargo
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#services"
-                  className="hover:text-white transition-colors"
-                >
-                  Heavy Lift
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#services"
-                  className="hover:text-white transition-colors"
-                >
-                  Offshore Support
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#services"
-                  className="hover:text-white transition-colors"
-                >
-                  Chartering
-                </a>
-              </li>
+              {services.length > 0 ? (
+                services.map((service) => (
+                  <li key={service.id}>
+                    <Link
+                      href={service.uri || '#services'}
+                      className="hover:text-white transition-colors"
+                    >
+                      {service.title}
+                    </Link>
+                  </li>
+                ))
+              ) : (
+                <>
+                  <li>
+                    <a
+                      href="#services"
+                      className="hover:text-white transition-colors"
+                    >
+                      Ship Agency
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="#services"
+                      className="hover:text-white transition-colors"
+                    >
+                      Project Cargo
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="#services"
+                      className="hover:text-white transition-colors"
+                    >
+                      Heavy Lift
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="#services"
+                      className="hover:text-white transition-colors"
+                    >
+                      Offshore Support
+                    </a>
+                  </li>
+                </>
+              )}
             </ul>
           </div>
 
@@ -145,7 +165,7 @@ export default function Footer({ dict, locale, wpData }) {
             <div className="relative h-44 rounded-2xl overflow-hidden border border-white/10 shadow-xl">
               <iframe
                 title="Acunengy HQ Google Maps"
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3124.938834018332!2d27.1422!3d38.4358!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzjCsDI2JzA4LjkiTiAyN8KwMDgnMzEuOSJF!5e0!3m2!1sen!2str!4v1620000000000!5m2!1sen!2str"
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3124.938834018332!2d27.1422!3d38.4358!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzjCsDI2JzA4LjkiTiAyN8KwMDgnMzMid0JF!5e0!3m2!1sen!2str!4v1620000000000!5m2!1sen!2str"
                 width="100%"
                 height="100%"
                 style={{
@@ -163,15 +183,18 @@ export default function Footer({ dict, locale, wpData }) {
         <div className="pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between text-xs text-gray-400 font-mono gap-4">
           <p>© {currentYear} Acunengy Shipping & Maritime Services Inc.</p>
           <div className="flex items-center gap-6">
-            <a href="#" className="hover:text-white transition-colors">
+            <Link
+              href="/privacy"
+              className="hover:text-white transition-colors"
+            >
               Privacy Policy
-            </a>
-            <a href="#" className="hover:text-white transition-colors">
+            </Link>
+            <Link href="/terms" className="hover:text-white transition-colors">
               Terms of Service
-            </a>
-            <a href="#" className="hover:text-white transition-colors">
+            </Link>
+            <Link href="/hse" className="hover:text-white transition-colors">
               HSE Statement
-            </a>
+            </Link>
           </div>
         </div>
       </div>

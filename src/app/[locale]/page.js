@@ -60,7 +60,7 @@ export default async function Home({ params }) {
         <Contact dict={dict.contact} wpData={wpData} />
       </section>
 
-      <EmergencyWidget />
+      <EmergencyWidget wpData={wpData} />
       <Footer dict={dict.footer} wpData={wpData} />
     </main>
   );

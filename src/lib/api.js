@@ -34,6 +34,7 @@ export async function getHomePageData(locale = 'tr') {
 
   const query = `
     query GetHomePageData($language: LanguageCodeFilterEnum!) {
+      # 1. Ana Sayfa ACF Alanları
       pages(where: { language: $language }, first: 50) {
         nodes {
           id
@@ -54,9 +55,41 @@ export async function getHomePageData(locale = 'tr') {
               description
               btnText
             }
+            specializationsHeaderGroup {
+              badge
+              title
+              description
+            }
+            industriesHeaderGroup {
+              badge
+              title
+              description
+            }
+            fleetHeaderGroup {
+              badge
+              title
+              description
+            }
+            newsHeaderGroup {
+              badge
+              title
+              description
+              btnText
+            }
+            contactGroup {
+              badge
+              title
+              description
+              phone
+              email
+              address
+              whatsapp
+            }
           }
         }
       }
+
+      # 2. Hizmetler CPT
       services(where: { language: $language }, first: 100) {
         nodes {
           id
@@ -69,6 +102,82 @@ export async function getHomePageData(locale = 'tr') {
           }
         }
       }
+
+      # 3. Uzmanlıklar CPT
+      specializations(where: { language: $language }, first: 20) {
+        nodes {
+          id
+          title
+          slug
+          uri
+          featuredImage {
+            node {
+              sourceUrl
+            }
+          }
+          specFields {
+            kategori
+            ikonAdi
+            description
+          }
+        }
+      }
+
+      # 4. Sektörler CPT
+      industries(where: { language: $language }, first: 20) {
+        nodes {
+          id
+          title
+          slug
+          uri
+          featuredImage {
+            node {
+              sourceUrl
+            }
+          }
+        }
+      }
+
+      # 5. Filo / Gemiler CPT
+      vessels(where: { language: $language }, first: 30) {
+        nodes {
+          id
+          title
+          slug
+          uri
+          featuredImage {
+            node {
+              sourceUrl
+            }
+          }
+          fleetFields {
+            category
+            vesselType
+            vesselStatus
+          }
+        }
+      }
+
+      # 6. WordPress Standart Posts (Yazılar)
+      posts(where: { language: $language }, first: 3) {
+        nodes {
+          id
+          title
+          slug
+          uri
+          date
+          categories {
+            nodes {
+              name
+            }
+          }
+          featuredImage {
+            node {
+              sourceUrl
+            }
+          }
+        }
+      }
     }
   `;
 
@@ -76,8 +185,11 @@ export async function getHomePageData(locale = 'tr') {
 
   const allPages = data?.pages?.nodes || [];
   const rawServices = data?.services?.nodes || [];
+  const rawSpecs = data?.specializations?.nodes || [];
+  const rawIndustries = data?.industries?.nodes || [];
+  const rawFleet = data?.vessels?.nodes || [];
+  const rawPosts = data?.posts?.nodes || [];
 
-  // Dile göre doğru Ana Sayfa Node'unu seçiyoruz
   let homeNode = allPages.find((p) => {
     if (currentLang === 'en') {
       return p.slug === 'home' || p.uri?.includes('/en/');
@@ -93,20 +205,32 @@ export async function getHomePageData(locale = 'tr') {
     homeNode = allPages[0];
   }
 
-  // Çift güvenlikli Hizmet listesi süzgeci
-  const filteredServices = rawServices.filter((service) => {
-    const uri = service.uri || '';
-    if (currentLang === 'en') {
-      return uri.includes('/en/');
-    }
-    return !uri.includes('/en/');
-  });
+  const filteredServices = rawServices.filter((s) =>
+    currentLang === 'en' ? s.uri?.includes('/en/') : !s.uri?.includes('/en/'),
+  );
+
+  const filteredSpecs = rawSpecs.filter((s) =>
+    currentLang === 'en' ? s.uri?.includes('/en/') : !s.uri?.includes('/en/'),
+  );
+
+  const filteredIndustries = rawIndustries.filter((i) =>
+    currentLang === 'en' ? i.uri?.includes('/en/') : !i.uri?.includes('/en/'),
+  );
+
+  const filteredFleet = rawFleet.filter((f) =>
+    currentLang === 'en' ? f.uri?.includes('/en/') : !f.uri?.includes('/en/'),
+  );
+
+  const filteredPosts = rawPosts.filter((p) =>
+    currentLang === 'en' ? p.uri?.includes('/en/') : !p.uri?.includes('/en/'),
+  );
 
   return {
     pageFields: homeNode?.homepageFields || null,
     servicesList: filteredServices,
-    fleetList: [],
-    industriesList: [],
-    specializationsList: [],
+    fleetList: filteredFleet,
+    industriesList: filteredIndustries,
+    specializationsList: filteredSpecs,
+    newsList: filteredPosts,
   };
 }

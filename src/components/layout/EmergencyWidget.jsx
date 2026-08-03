@@ -3,11 +3,20 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-export default function EmergencyWidget() {
+export default function EmergencyWidget({ wpData }) {
   const [isOpen, setIsOpen] = useState(false);
 
-  // Brief'teki iletişim bilgileri
-  const whatsappNumber = '905300000000'; // Müşterinin gerçek WhatsApp hattı
+  // 1. WordPress ACF İletişim Grubu Verileri
+  const contactData = wpData?.pageFields?.contactGroup;
+
+  // ACF'ten gelen WhatsApp linki/numarası yoksa fallback kullanır
+  const rawWhatsapp = contactData?.whatsapp || '';
+
+  // Link veya Numara girilmişse sadece rakamları alarak wa.me formatına getirir
+  const cleanWhatsappNumber = rawWhatsapp
+    ? String(rawWhatsapp).replace(/\D/g, '')
+    : '';
+
   const defaultMessage = encodeURIComponent(
     'Hello Acunengy 24/7 Desk, I require urgent maritime/port agency support.',
   );
@@ -21,7 +30,7 @@ export default function EmergencyWidget() {
             initial={{ opacity: 0, y: 15, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 15, scale: 0.95 }}
-            className="mb-4 w-72 md:w-80 bg-customSurface border border-customBorder rounded-lg shadow-2xl p-5 text-customText backdrop-blur-md"
+            className="mb-4 w-72 md:w-80 bg-customSurface border border-customBorder rounded-2xl shadow-2xl p-5 text-customText backdrop-blur-md"
           >
             <div className="flex justify-between items-center mb-3">
               <span className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-emerald-500 font-bold">
@@ -30,7 +39,7 @@ export default function EmergencyWidget() {
               </span>
               <button
                 onClick={() => setIsOpen(false)}
-                className="text-customMuted hover:text-customText transition-colors"
+                className="text-customMuted hover:text-customText transition-colors cursor-pointer"
               >
                 <span className="material-symbols-outlined text-sm">close</span>
               </button>
@@ -45,10 +54,10 @@ export default function EmergencyWidget() {
             </p>
 
             <a
-              href={`https://wa.me/${whatsappNumber}?text=${defaultMessage}`}
+              href={`https://wa.me/${cleanWhatsappNumber}?text=${defaultMessage}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-mono text-xs font-bold uppercase tracking-wider rounded flex items-center justify-center gap-2 transition-all shadow-md"
+              className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-mono text-xs font-bold uppercase tracking-wider rounded-xl flex items-center justify-center gap-2 transition-all shadow-md active:scale-95"
             >
               <span className="material-symbols-outlined text-sm">chat</span>
               Start WhatsApp Chat
@@ -60,7 +69,7 @@ export default function EmergencyWidget() {
       {/* Ana Yüzen Buton */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative bg-[#0B2341] dark:bg-customAccent text-white dark:text-[#0B2341] p-4 rounded-full shadow-2xl border border-white/20 flex items-center justify-center group hover:scale-105 active:scale-95 transition-all"
+        className="relative bg-[#0B2341] dark:bg-customAccent text-white dark:text-[#0B2341] p-4 rounded-full shadow-2xl border border-white/20 flex items-center justify-center group hover:scale-105 active:scale-95 transition-all cursor-pointer"
         aria-label="24/7 Emergency Support"
       >
         <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-emerald-500 border-2 border-[#0B2341] rounded-full animate-pulse" />

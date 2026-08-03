@@ -16,19 +16,16 @@ export default function Contact({ dict, wpData }) {
     message: '',
   });
 
-  const displayBadge = wpData?.contactBadge || dict?.badge || 'CONTACT US';
-  const displayTitle = wpData?.contactTitle || dict?.title || 'Get in Touch';
-  const displayDesc =
-    wpData?.contactDesc ||
-    dict?.description ||
-    'Reach out to our global operations desk for immediate maritime support and project cargo inquiries.';
+  // 1. ACF İletişim Bilgileri
+  const contactData = wpData?.pageFields?.contactGroup;
 
-  const displayPhone = wpData?.contactPhone || '+90 532 XXX XX XX';
-  const displayEmail = wpData?.contactEmail || 'shipping@acunengy.com';
-  const displayAddress =
-    wpData?.contactAddress ||
-    'Plaza Cubes Office Solutions, Mistral Tower, Konak / İzmir, Türkiye';
-  const whatsappUrl = wpData?.contactWhatsapp || '#';
+  const displayBadge = contactData?.badge;
+  const displayTitle = contactData?.title;
+  const displayDesc = contactData?.description;
+  const displayPhone = contactData?.phone;
+  const displayEmail = contactData?.email;
+  const displayAddress = contactData?.address;
+  const whatsappUrl = contactData?.whatsapp;
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -233,12 +230,11 @@ export default function Contact({ dict, wpData }) {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className={`w-full py-4 font-mono text-xs uppercase tracking-widest transition-all font-extrabold rounded-2xl flex justify-center items-center gap-2 shadow-lg cursor-pointer
-                  ${
-                    isSubmitting
-                      ? 'bg-customMuted text-white cursor-not-allowed'
-                      : 'bg-customAccent text-white hover:opacity-90 shadow-[0_0_20px_rgba(56,189,248,0.3)]'
-                  }`}
+                className={`w-full py-4 font-mono text-xs uppercase tracking-widest transition-all font-extrabold rounded-2xl flex justify-center items-center gap-2 shadow-lg cursor-pointer ${
+                  isSubmitting
+                    ? 'bg-customMuted text-white cursor-not-allowed'
+                    : 'bg-customAccent text-white hover:opacity-90 shadow-[0_0_20px_rgba(56,189,248,0.3)]'
+                }`}
               >
                 {isSubmitting
                   ? dict?.btnSending || 'TRANSMITTING...'
