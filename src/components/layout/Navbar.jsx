@@ -1,11 +1,11 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
 import ThemeToggle from '@/components/layout/ThemeToggle';
 
-export default function Navbar({ dict, locale }) {
+export default function Navbar() {
   const [activeSection, setActiveSection] = useState('hero');
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -13,18 +13,20 @@ export default function Navbar({ dict, locale }) {
   const pathname = usePathname();
   const currentLocale = pathname?.startsWith('/en') ? 'en' : 'tr';
 
-  // 1. ABOUT HAKKIMIZDA EKLENDİ
-  const navItems = [
-    { id: 'hero', label: currentLocale === 'tr' ? 'ANASAYFA' : 'HOME' },
-    { id: 'about', label: currentLocale === 'tr' ? 'HAKKIMIZDA' : 'ABOUT' },
-    {
-      id: 'services',
-      label: currentLocale === 'tr' ? 'HİZMETLER' : 'SERVICES',
-    },
-    { id: 'fleet', label: currentLocale === 'tr' ? 'FİLO' : 'FLEET' },
-    { id: 'news', label: currentLocale === 'tr' ? 'BÜLTEN' : 'INSIGHTS' },
-    { id: 'contact', label: currentLocale === 'tr' ? 'İLETİŞİM' : 'CONTACT' },
-  ];
+  const navItems = useMemo(
+    () => [
+      { id: 'hero', label: currentLocale === 'tr' ? 'ANASAYFA' : 'HOME' },
+      { id: 'about', label: currentLocale === 'tr' ? 'HAKKIMIZDA' : 'ABOUT' },
+      {
+        id: 'services',
+        label: currentLocale === 'tr' ? 'HİZMETLER' : 'SERVICES',
+      },
+      { id: 'fleet', label: currentLocale === 'tr' ? 'FİLO' : 'FLEET' },
+      { id: 'news', label: currentLocale === 'tr' ? 'BÜLTEN' : 'INSIGHTS' },
+      { id: 'contact', label: currentLocale === 'tr' ? 'İLETİŞİM' : 'CONTACT' },
+    ],
+    [currentLocale],
+  );
 
   useEffect(() => {
     const handleScroll = () => {
@@ -42,11 +44,11 @@ export default function Navbar({ dict, locale }) {
       }
     };
 
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, [navItems]);
 
-  const scrollToSection = (e, id) => {
+  const scrollToSection = useCallback((e, id) => {
     e.preventDefault();
     setIsMobileMenuOpen(false);
 
@@ -63,14 +65,14 @@ export default function Navbar({ dict, locale }) {
         behavior: 'smooth',
       });
     }
-  };
+  }, []);
 
-  const toggleLanguage = () => {
+  const toggleLanguage = useCallback(() => {
     const nextLocale = currentLocale === 'tr' ? 'en' : 'tr';
     const cleanPath = pathname.replace(/^\/(tr|en)/, '');
     const newUrl = `${window.location.origin}/${nextLocale}${cleanPath || ''}`;
     window.location.href = newUrl;
-  };
+  }, [currentLocale, pathname]);
 
   return (
     <header className="fixed top-6 inset-x-0 z-50 flex justify-center px-4 md:px-8 transition-all duration-300">
@@ -82,7 +84,6 @@ export default function Navbar({ dict, locale }) {
             : 'bg-customBg/85 border-customBorder/80 shadow-black/20'
         }`}
       >
-        {/* 1. SOL KISIM: Navigasyon Linkleri */}
         <div className="hidden lg:flex items-center gap-1 relative bg-customSurface/40 p-1.5 rounded-full border border-customBorder/50">
           {navItems.map((item) => {
             const isActive = activeSection === item.id;
@@ -110,7 +111,6 @@ export default function Navbar({ dict, locale }) {
           })}
         </div>
 
-        {/* 2. ORTA KISIM: Logo */}
         <a
           href="#hero"
           onClick={(e) => scrollToSection(e, 'hero')}
@@ -120,13 +120,13 @@ export default function Navbar({ dict, locale }) {
           <span className="text-lg md:text-xl text-customAccent">SHIPPING</span>
         </a>
 
-        {/* 3. SAĞ KISIM: Tema ve Dil Butonları */}
         <div className="hidden lg:flex items-center gap-4">
           <div className="flex items-center justify-center w-10 h-10 rounded-full bg-customSurface/90 border border-customBorder text-customText shadow-md">
             <ThemeToggle />
           </div>
 
           <button
+            type="button"
             onClick={toggleLanguage}
             className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-customAccent text-customBg dark:bg-white dark:text-slate-950 font-mono text-sm font-extrabold tracking-widest hover:brightness-110 active:scale-95 transition-all shadow-lg border border-white/25 dark:border-white/50 cursor-pointer"
           >
@@ -135,13 +135,13 @@ export default function Navbar({ dict, locale }) {
           </button>
         </div>
 
-        {/* Mobil Sağ Düzen */}
         <div className="flex lg:hidden items-center gap-3">
           <div className="flex items-center justify-center w-9 h-9 rounded-full bg-customSurface/90 border border-customBorder text-customText shadow-md">
             <ThemeToggle />
           </div>
 
           <button
+            type="button"
             onClick={toggleLanguage}
             className="px-3.5 py-1.5 rounded-full bg-customAccent text-customBg dark:bg-white dark:text-slate-950 font-mono text-xs font-bold shadow-md flex items-center gap-1 cursor-pointer"
           >
@@ -150,6 +150,7 @@ export default function Navbar({ dict, locale }) {
           </button>
 
           <button
+            type="button"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             className="text-customText p-1 text-2xl cursor-pointer"
             aria-label="Toggle Menu"
@@ -159,7 +160,6 @@ export default function Navbar({ dict, locale }) {
         </div>
       </nav>
 
-      {/* Mobil Menü Paneli */}
       {isMobileMenuOpen && (
         <div className="lg:hidden absolute top-20 inset-x-4 bg-customBg/95 border border-customBorder backdrop-blur-2xl rounded-2xl p-6 shadow-2xl flex flex-col gap-3 z-50">
           {navItems.map((item) => (

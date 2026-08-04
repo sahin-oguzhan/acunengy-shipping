@@ -5,8 +5,6 @@ import Services from '@/components/home/Services';
 import Specializations from '@/components/home/Specializations';
 import Industries from '@/components/home/Industries';
 import FleetOperations from '@/components/home/FleetOperations';
-import WhyChooseUs from '@/components/home/WhyChooseUs';
-import EliteAdvantage from '@/components/home/EliteAdvantages';
 import News from '@/components/home/News';
 import Contact from '@/components/home/Contact';
 import EmergencyWidget from '@/components/layout/EmergencyWidget';

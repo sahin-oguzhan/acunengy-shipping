@@ -1,9 +1,15 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  useCallback,
+  useMemo,
+} from 'react';
 import FadeIn from '@/components/ui/FadeIn';
 
-export default function Services({ dict, locale, wpData }) {
+export default function Services({ wpData }) {
   const [isHovering, setIsHovering] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [dragDistance, setDragDistance] = useState(0);
@@ -11,54 +17,57 @@ export default function Services({ dict, locale, wpData }) {
   const sliderRef = useRef(null);
   const cursorRef = useRef(null);
 
-  const [startX, setStartX] = useState(0);
   const [lastX, setLastX] = useState(0);
 
-  // 1. ACF Başlık Bilgileri
   const headerData = wpData?.pageFields?.servicesHeaderGroup;
   const displayBadge = headerData?.badge || '';
   const displayTitle = headerData?.title || '';
   const displayDesc = headerData?.description || '';
   const displayBtnLearnMore = headerData?.btnText || 'LEARN MORE';
 
-  // 2. Hizmet Kartlarını Hazırlama
   const rawWpServices = wpData?.servicesList || [];
-  const finalServices = rawWpServices
-    .filter((item) => item.title && item.title.trim() !== '')
-    .map((item) => ({
-      id: item.id,
-      icon: item.serviceFields?.iconName || 'anchor',
-      title: item.title,
-      description: item.serviceFields?.shortDesc || '',
-    }));
 
-  // Sonsuz Döngü Garantisi: Ekranın dolması için ana listeyi en az 6 karta tamamlıyoruz
-  let paddedServices = [...finalServices];
-  if (paddedServices.length > 0) {
-    while (paddedServices.length < 6) {
-      paddedServices = [...paddedServices, ...finalServices];
+  const finalServices = useMemo(() => {
+    return rawWpServices
+      .filter((item) => item.title && item.title.trim() !== '')
+      .map((item) => ({
+        id: item.id,
+        icon: item.serviceFields?.iconName || 'anchor',
+        title: item.title,
+        description: item.serviceFields?.shortDesc || '',
+      }));
+  }, [rawWpServices]);
+
+  const paddedServices = useMemo(() => {
+    let list = [...finalServices];
+    if (list.length > 0) {
+      while (list.length < 6) {
+        list = [...list, ...finalServices];
+      }
     }
-  }
+    return list;
+  }, [finalServices]);
 
-  // Kesintisiz döngü (sol, orta, sağ) için 3 eşit sete bölüyoruz
-  const duplicatedServices =
-    paddedServices.length > 0
+  const duplicatedServices = useMemo(() => {
+    return paddedServices.length > 0
       ? [...paddedServices, ...paddedServices, ...paddedServices]
       : [];
+  }, [paddedServices]);
 
-  // SINIR KONTROLÜ: En sağa veya en sola dayandığında çaktırmadan ortadaki sete ışınlar
-  const checkLoopBoundaries = (slider) => {
-    if (!slider || duplicatedServices.length === 0) return;
-    const singleSetWidth = slider.scrollWidth / 3;
+  const checkLoopBoundaries = useCallback(
+    (slider) => {
+      if (!slider || duplicatedServices.length === 0) return;
+      const singleSetWidth = slider.scrollWidth / 3;
 
-    if (slider.scrollLeft <= 5) {
-      slider.scrollLeft += singleSetWidth;
-    } else if (slider.scrollLeft >= singleSetWidth * 2 - 5) {
-      slider.scrollLeft -= singleSetWidth;
-    }
-  };
+      if (slider.scrollLeft <= 5) {
+        slider.scrollLeft += singleSetWidth;
+      } else if (slider.scrollLeft >= singleSetWidth * 2 - 5) {
+        slider.scrollLeft -= singleSetWidth;
+      }
+    },
+    [duplicatedServices.length],
+  );
 
-  // İLK YÜKLEME: Başlangıçta kaydırmayı ortadaki setin başına al
   useEffect(() => {
     if (sliderRef.current && duplicatedServices.length > 0) {
       const timeout = setTimeout(() => {
@@ -69,9 +78,8 @@ export default function Services({ dict, locale, wpData }) {
       }, 100);
       return () => clearTimeout(timeout);
     }
-  }, [wpData, finalServices.length]);
+  }, [duplicatedServices.length]);
 
-  // ÖZEL İMLEÇ TAKİBİ
   useEffect(() => {
     const moveCursor = (e) => {
       if (cursorRef.current) {
@@ -82,7 +90,6 @@ export default function Services({ dict, locale, wpData }) {
     return () => window.removeEventListener('mousemove', moveCursor);
   }, []);
 
-  // OTOMATİK KAYDIRMA
   useEffect(() => {
     const slider = sliderRef.current;
     if (!slider || finalServices.length === 0) return;
@@ -98,14 +105,12 @@ export default function Services({ dict, locale, wpData }) {
 
     animationId = requestAnimationFrame(step);
     return () => cancelAnimationFrame(animationId);
-  }, [isHovering, isDragging, finalServices.length]);
+  }, [isHovering, isDragging, finalServices.length, checkLoopBoundaries]);
 
-  // MANUEL SÜRÜKLEME (Drag & Drop)
   const handleMouseDown = (e) => {
     if (finalServices.length === 0) return;
     setIsDragging(true);
     setDragDistance(0);
-    setStartX(e.pageX);
     setLastX(e.pageX);
   };
 
@@ -123,7 +128,6 @@ export default function Services({ dict, locale, wpData }) {
     checkLoopBoundaries(sliderRef.current);
   };
 
-  // İLETİŞİME SMOOTH SCROLL İLE KAYDIRMA FONKSİYONU
   const handleCardClick = (e) => {
     if (dragDistance > 10) {
       e.preventDefault();
@@ -152,7 +156,6 @@ export default function Services({ dict, locale, wpData }) {
 
   return (
     <section className="py-24 md:py-28 bg-customBg relative overflow-hidden">
-      {/* İMLEÇ WIDGET'I */}
       <div
         ref={cursorRef}
         className="fixed top-0 left-0 pointer-events-none z-[100] will-change-transform"
@@ -174,7 +177,6 @@ export default function Services({ dict, locale, wpData }) {
 
       <div className="absolute inset-0 bg-customSurface/20 pointer-events-none" />
 
-      {/* BAŞLIK VE AÇIKLAMA */}
       <FadeIn direction="up">
         <div className="text-center max-w-3xl mx-auto mb-16 md:mb-20 px-6 relative z-10">
           {displayBadge && (
@@ -195,13 +197,11 @@ export default function Services({ dict, locale, wpData }) {
         </div>
       </FadeIn>
 
-      {/* KAYDIRMA ALANI */}
       {finalServices.length > 0 && (
         <div className="relative w-full overflow-hidden flex whitespace-nowrap py-6">
           <div className="absolute left-0 inset-y-0 w-24 md:w-40 bg-gradient-to-r from-customBg to-transparent z-30 pointer-events-none" />
           <div className="absolute right-0 inset-y-0 w-24 md:w-40 bg-gradient-to-l from-customBg to-transparent z-30 pointer-events-none" />
 
-          {/* Slider Kapsayıcısı */}
           <div
             ref={sliderRef}
             className="flex gap-8 px-4 w-full overflow-x-auto touch-pan-x [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] py-2 cursor-none select-none relative z-20"
