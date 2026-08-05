@@ -4,12 +4,16 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 
 export default function Preloader() {
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return !sessionStorage.getItem('hasLoaded');
+    }
+    return true;
+  });
 
   useEffect(() => {
     const hasLoaded = sessionStorage.getItem('hasLoaded');
     if (hasLoaded) {
-      setIsLoading(false);
       return;
     }
 
