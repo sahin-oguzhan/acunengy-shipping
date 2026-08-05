@@ -9,6 +9,8 @@ export default function Hero({ wpData }) {
   const pathname = usePathname();
   const currentLocale = pathname?.startsWith('/en') ? 'en' : 'tr';
 
+  const videoSrc = wpData?.videoUrl || '/videos/hero-video.mp4';
+
   const heroData = wpData?.pageFields?.heroGroup;
 
   const displayBadge = heroData?.heroBadge || '';
@@ -45,12 +47,10 @@ export default function Hero({ wpData }) {
           loop
           muted
           playsInline
-          preload="metadata"
+          preload="none"
           className="w-full h-full object-cover object-center scale-105"
         >
-          {videoUrl && <source src={videoUrl} type="video/mp4" />}
-          <source src="/videos/hero-video.webm" type="video/webm" />
-          <source src="/videos/hero-video.mp4" type="video/mp4" />
+          <source src={videoSrc} type="video/mp4" />
         </video>
 
         <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent z-10 pointer-events-none" />

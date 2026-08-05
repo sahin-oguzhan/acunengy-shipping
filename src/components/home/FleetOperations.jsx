@@ -6,13 +6,11 @@ import FadeIn from '@/components/ui/FadeIn';
 export default function FleetOperations({ dict, locale, wpData }) {
   const [activeFilter, setActiveFilter] = useState('all');
 
-  // 1. ACF Başlık Bilgileri
   const headerData = wpData?.pageFields?.fleetHeaderGroup;
   const displayBadge = headerData?.badge || '';
   const displayTitle = headerData?.title || '';
   const displayDesc = headerData?.description || '';
 
-  // 2. Filtre Düğmeleri (id'ler küçük harf)
   const filters = [
     { id: 'all', label: 'ALL ASSETS' },
     { id: 'vessels', label: 'HEAVY-LIFT FLEET' },
@@ -20,12 +18,10 @@ export default function FleetOperations({ dict, locale, wpData }) {
     { id: 'offshore', label: 'OFFSHORE SUPPORT' },
   ];
 
-  // 3. WordPress'ten Gelen CPT Verisinin Haritalanması
   const rawWpFleet = wpData?.fleetList || [];
   const assets = rawWpFleet
     .filter((item) => item.title && item.title.trim() !== '')
     .map((item, index) => {
-      // Kategori değerini güvenli temizleme (küçük harfe çevir ve boşsa 'vessels' yap)
       const rawCategory = item.fleetFields?.category;
       const cleanCategory = rawCategory
         ? String(rawCategory).toLowerCase().trim()
@@ -41,19 +37,16 @@ export default function FleetOperations({ dict, locale, wpData }) {
       };
     });
 
-  // Filtreleme Mantığı (Hem 'all' hem de eşleşme durumları)
   const filteredAssets =
     activeFilter === 'all'
       ? assets
       : assets.filter((item) => {
-          // Esnek eşleşme: Kategori tam uyuyor mu veya metin içinde geçiyor mu?
           return (
             item.category === activeFilter ||
             item.category.includes(activeFilter)
           );
         });
 
-  // Eğer veri yoksa bileşeni gizle
   if (!displayTitle && !displayBadge && assets.length === 0) {
     return null;
   }
@@ -63,7 +56,6 @@ export default function FleetOperations({ dict, locale, wpData }) {
       <div className="absolute inset-0 bg-customBg/20 pointer-events-none" />
 
       <div className="max-w-7xl mx-auto relative z-10">
-        {/* BAŞLIK ALANI */}
         <FadeIn direction="up">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
             <div>
@@ -86,7 +78,6 @@ export default function FleetOperations({ dict, locale, wpData }) {
           </div>
         </FadeIn>
 
-        {/* FİLTRE DÜĞMELERİ */}
         {assets.length > 0 && (
           <div className="flex flex-wrap items-center gap-3 mb-14">
             {filters.map((filter) => (
@@ -105,13 +96,11 @@ export default function FleetOperations({ dict, locale, wpData }) {
           </div>
         )}
 
-        {/* KARTLAR GRID */}
         {filteredAssets.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredAssets.map((asset, index) => (
               <FadeIn key={asset.id} delay={index * 0.08} direction="up">
                 <div className="group relative h-[420px] rounded-3xl overflow-hidden border border-customBorder/80 bg-slate-950 shadow-2xl flex flex-col justify-end p-8 cursor-pointer hover:border-customAccent/60 transition-all duration-300 hover:-translate-y-2">
-                  {/* ARKA PLAN GÖRSELİ */}
                   {asset.image && (
                     <div
                       className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110"
@@ -119,24 +108,19 @@ export default function FleetOperations({ dict, locale, wpData }) {
                     />
                   )}
 
-                  {/* GRADYAN MASKESİ */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/65 to-black/20 transition-all duration-300" />
 
-                  {/* İÇERİK */}
                   <div className="relative z-10 text-white">
-                    {/* TEKNİK ETIKET (DURUM) */}
                     {asset.tag && (
                       <span className="font-mono text-xs text-white font-bold uppercase tracking-widest bg-black/70 px-4 py-1.5 rounded-full border border-white/20 inline-block mb-4 backdrop-blur-md shadow-md">
                         {asset.tag}
                       </span>
                     )}
 
-                    {/* BAŞLIK */}
                     <h3 className="text-xl md:text-2xl font-black font-heading text-white mb-4 group-hover:text-[#38bdf8] transition-colors tracking-tight drop-shadow-md">
                       {asset.title}
                     </h3>
 
-                    {/* GEMİ TİPİ / KAPASİTE */}
                     {asset.spec1 && (
                       <div className="pt-4 border-t border-white/20 flex items-center justify-between font-mono text-xs text-gray-200 font-semibold">
                         <span>{asset.spec1}</span>
@@ -148,7 +132,6 @@ export default function FleetOperations({ dict, locale, wpData }) {
             ))}
           </div>
         ) : (
-          /* Seçiili kategoride veri yoksa şık bir uyarı */
           <div className="text-center py-16 border border-dashed border-customBorder/60 rounded-3xl">
             <p className="font-mono text-sm text-customMuted">
               No assets found in this category.

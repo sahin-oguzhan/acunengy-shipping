@@ -95,9 +95,9 @@ export default function Contact({ dict, wpData }) {
                   </span>
                 </div>
                 <div>
-                  <p className="font-mono text-xs text-customMuted uppercase font-bold tracking-wider">
+                  <h3 className="font-mono text-xs text-customMuted uppercase font-bold tracking-wider">
                     {dict?.emergency || 'EMERGENCY DESK'}
-                  </p>
+                  </h3>
                   <p className="text-customText text-lg md:text-xl font-bold font-mono mt-1 tracking-tight">
                     {displayPhone}
                   </p>
@@ -111,9 +111,9 @@ export default function Contact({ dict, wpData }) {
                   </span>
                 </div>
                 <div>
-                  <p className="font-mono text-xs text-customMuted uppercase font-bold tracking-wider">
+                  <h3 className="font-mono text-xs text-customMuted uppercase font-bold tracking-wider">
                     {dict?.general || 'GENERAL INQUIRIES'}
-                  </p>
+                  </h3>
                   <p className="text-customText text-lg md:text-xl font-bold font-mono mt-1 tracking-tight">
                     {displayEmail}
                   </p>
@@ -127,9 +127,9 @@ export default function Contact({ dict, wpData }) {
                   </span>
                 </div>
                 <div>
-                  <p className="font-mono text-xs text-customMuted uppercase font-bold tracking-wider">
+                  <h3 className="font-mono text-xs text-customMuted uppercase font-bold tracking-wider">
                     {dict?.office || 'HEADQUARTERS'}
-                  </p>
+                  </h3>
                   <p className="text-customText text-sm md:text-base font-medium mt-1 leading-relaxed">
                     {displayAddress}
                   </p>
@@ -191,19 +191,20 @@ export default function Contact({ dict, wpData }) {
               </div>
 
               <div className="space-y-2">
-                <label className="font-mono text-xs text-customMuted uppercase font-bold tracking-wider">
-                  {dict?.formService || 'Service Required'}
+                <label
+                  htmlFor="user_service_select"
+                  className="font-mono text-xs text-customMuted uppercase font-bold tracking-wider block"
+                >
+                  {dict?.formServiceLabel || 'Select Service'}
                 </label>
+
                 <select
+                  id="user_service_select"
                   name="user_service"
                   required
-                  value={formData.user_service}
-                  onChange={handleChange}
-                  className="w-full bg-customBg/80 border border-customBorder/80 rounded-2xl text-customText p-4 focus:border-customAccent focus:outline-none transition-colors appearance-none cursor-pointer text-sm font-medium shadow-sm"
+                  className="w-full bg-customBg/80 border border-customBorder/80 rounded-2xl text-customText p-4 focus:border-customAccent focus:outline-none transition-colors text-sm font-medium shadow-sm"
                 >
-                  <option value="" disabled>
-                    Select a Service...
-                  </option>
+                  <option value="">{'Select a Service...'}</option>
                   <option value="Ship Agency">Ship Agency</option>
                   <option value="Project Cargo">Project Cargo</option>
                   <option value="Heavy Lift">Heavy Lift</option>
