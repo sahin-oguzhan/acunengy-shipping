@@ -1,11 +1,21 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import Link from 'next/link';
 import FadeIn from '@/components/ui/FadeIn';
 
 export default function News({ dict, locale, wpData }) {
-  // 1. ACF Başlık Bilgileri
+  useEffect(() => {
+    if (window.location.hash === '#news') {
+      const newsSection = document.getElementById('news');
+      if (newsSection) {
+        setTimeout(() => {
+          newsSection.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+      }
+    }
+  }, []);
+
   const headerData = wpData?.pageFields?.newsHeaderGroup;
   const displayBadge = headerData?.badge || '';
   const displayTitle = headerData?.title || '';
@@ -13,7 +23,6 @@ export default function News({ dict, locale, wpData }) {
   const displayBtn =
     headerData?.btnText || (locale === 'tr' ? 'TÜM HABERLER' : 'VIEW ALL NEWS');
 
-  // 2. Doğrudan WordPress Posts (Yazılar) Verisi
   const rawPosts = wpData?.newsList || [];
 
   const finalPosts = rawPosts.map((post, index) => {
@@ -42,7 +51,6 @@ export default function News({ dict, locale, wpData }) {
     };
   });
 
-  // Veri yoksa bileşeni gizle
   if (!displayTitle && !displayBadge && finalPosts.length === 0) {
     return null;
   }
@@ -50,11 +58,13 @@ export default function News({ dict, locale, wpData }) {
   const readAnalysisText = locale === 'tr' ? 'DETAYLI OKU' : 'READ ANALYSIS';
 
   return (
-    <section className="py-28 px-6 md:px-16 bg-customSurface/60 border-t border-customBorder/80 transition-colors duration-300 relative overflow-hidden">
+    <section
+      id="news"
+      className="py-28 px-6 md:px-16 bg-customSurface/60 border-t border-customBorder/80 transition-colors duration-300 relative overflow-hidden"
+    >
       <div className="absolute inset-0 bg-customBg/20 pointer-events-none" />
 
       <div className="max-w-7xl mx-auto relative z-10">
-        {/* BAŞLIK ALANI */}
         <FadeIn direction="up">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
             <div>
@@ -77,7 +87,6 @@ export default function News({ dict, locale, wpData }) {
           </div>
         </FadeIn>
 
-        {/* HABER KARTLARI (POSTS) GRID */}
         {finalPosts.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
             {finalPosts.map((post, index) => (
@@ -86,7 +95,6 @@ export default function News({ dict, locale, wpData }) {
                   href={`/${locale}/${post.slug}`}
                   className="relative h-[480px] rounded-3xl overflow-hidden border border-customBorder/80 bg-slate-950 shadow-2xl flex flex-col justify-between p-8 group cursor-pointer hover:border-customAccent/60 transition-all duration-300 hover:-translate-y-2 block"
                 >
-                  {/* ARKA PLAN GÖRSELİ */}
                   {post.image && (
                     <div
                       className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110"
@@ -94,10 +102,8 @@ export default function News({ dict, locale, wpData }) {
                     />
                   )}
 
-                  {/* GRADYAN MASKESİ */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/30 transition-all duration-300" />
 
-                  {/* ÜST KISIM: KATEGORİ VE OKUMA SÜRESİ */}
                   <div className="relative z-20 flex items-center justify-between">
                     {post.category && (
                       <span className="font-mono text-xs text-white font-bold uppercase tracking-widest bg-black/70 px-4 py-1.5 rounded-full border border-white/20 backdrop-blur-md shadow-md">
@@ -109,7 +115,6 @@ export default function News({ dict, locale, wpData }) {
                     </span>
                   </div>
 
-                  {/* ALT KISIM: TARİH VE BAŞLIK */}
                   <div className="relative z-10 text-white">
                     {post.date && (
                       <span className="font-mono text-xs text-gray-300 block mb-2 font-semibold">
@@ -136,7 +141,6 @@ export default function News({ dict, locale, wpData }) {
           </div>
         )}
 
-        {/* VIEW ALL / DÜĞME ALANI */}
         <div className="text-center">
           <Link
             href={`/${locale}/news`}

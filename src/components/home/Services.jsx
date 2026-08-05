@@ -25,9 +25,8 @@ export default function Services({ wpData }) {
   const displayDesc = headerData?.description || '';
   const displayBtnLearnMore = headerData?.btnText || 'LEARN MORE';
 
-  const rawWpServices = wpData?.servicesList || [];
-
   const finalServices = useMemo(() => {
+    const rawWpServices = wpData?.servicesList || [];
     return rawWpServices
       .filter((item) => item.title && item.title.trim() !== '')
       .map((item) => ({
@@ -36,7 +35,7 @@ export default function Services({ wpData }) {
         title: item.title,
         description: item.serviceFields?.shortDesc || '',
       }));
-  }, [rawWpServices]);
+  }, [wpData?.servicesList]);
 
   const paddedServices = useMemo(() => {
     let list = [...finalServices];
@@ -116,7 +115,6 @@ export default function Services({ wpData }) {
 
   const handleMouseMoveDrag = (e) => {
     if (!isDragging || finalServices.length === 0 || !sliderRef.current) return;
-    e.preventDefault();
 
     const x = e.pageX;
     const walkDelta = (x - lastX) * 1.5;
@@ -156,9 +154,10 @@ export default function Services({ wpData }) {
 
   return (
     <section className="py-24 md:py-28 bg-customBg relative overflow-hidden">
+      {/* İMLEÇ WIDGET'I (Mobilde Gizli) */}
       <div
         ref={cursorRef}
-        className="fixed top-0 left-0 pointer-events-none z-[100] will-change-transform"
+        className="hidden md:block fixed top-0 left-0 pointer-events-none z-[100] will-change-transform"
         style={{
           opacity: isHovering && finalServices.length > 0 ? 1 : 0,
           transition: 'opacity 0.3s ease',
@@ -202,9 +201,10 @@ export default function Services({ wpData }) {
           <div className="absolute left-0 inset-y-0 w-24 md:w-40 bg-gradient-to-r from-customBg to-transparent z-30 pointer-events-none" />
           <div className="absolute right-0 inset-y-0 w-24 md:w-40 bg-gradient-to-l from-customBg to-transparent z-30 pointer-events-none" />
 
+          {/* Slider Kapsayıcısı: Mobilde touch-pan-y ile dikey kaydırmaya izin verir, md ekranlarda custom cursor açılır */}
           <div
             ref={sliderRef}
-            className="flex gap-8 px-4 w-full overflow-x-auto touch-pan-x [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] py-2 cursor-none select-none relative z-20"
+            className="flex gap-8 px-4 w-full overflow-x-auto touch-pan-y [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] py-2 cursor-auto md:cursor-none select-none relative z-20"
             onMouseEnter={() => setIsHovering(true)}
             onMouseLeave={() => {
               setIsHovering(false);
@@ -240,7 +240,7 @@ export default function Services({ wpData }) {
                   href="#contact"
                   draggable={false}
                   onClick={handleCardClick}
-                  className="font-mono text-xs text-customText font-extrabold flex items-center gap-2 group-hover/card:gap-3.5 group-hover/card:text-customAccent transition-all uppercase tracking-wider w-fit cursor-none"
+                  className="font-mono text-xs text-customText font-extrabold flex items-center gap-2 group-hover/card:gap-3.5 group-hover/card:text-customAccent transition-all uppercase tracking-wider w-fit cursor-pointer md:cursor-none"
                 >
                   {displayBtnLearnMore}{' '}
                   <span className="material-symbols-outlined text-sm transition-transform duration-300 group-hover/card:translate-x-1">

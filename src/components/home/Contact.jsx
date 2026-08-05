@@ -16,7 +16,6 @@ export default function Contact({ dict, wpData }) {
     message: '',
   });
 
-  // 1. ACF İletişim Bilgileri
   const contactData = wpData?.pageFields?.contactGroup;
 
   const displayBadge = contactData?.badge;
@@ -37,13 +36,13 @@ export default function Contact({ dict, wpData }) {
 
     emailjs
       .sendForm(
-        'service_lcw0fqz',
-        'template_gsq0q5s',
+        process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID,
+        process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID,
         formRef.current,
-        'jQFpGWnhcgr9QoCsM',
+        process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY,
       )
       .then(
-        (result) => {
+        () => {
           setSubmitStatus('success');
           setIsSubmitting(false);
           setFormData({
@@ -58,14 +57,13 @@ export default function Contact({ dict, wpData }) {
         (error) => {
           setSubmitStatus('error');
           setIsSubmitting(false);
-          console.log(error.text);
+          console.error('EmailJS Error:', error.text);
         },
       );
   };
 
   return (
     <section className="relative py-28 px-6 md:px-16 overflow-hidden bg-customBg border-t border-customBorder/80 transition-colors duration-300">
-      {/* Arka plan görsel maskesi */}
       <div className="absolute inset-0 opacity-10 pointer-events-none">
         <div
           className="w-full h-full bg-cover bg-center"
@@ -77,7 +75,6 @@ export default function Contact({ dict, wpData }) {
       </div>
 
       <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-20 max-w-7xl mx-auto items-center">
-        {/* Sol Taraf: İletişim Bilgileri */}
         <FadeIn direction="up">
           <div>
             <span className="inline-block font-mono text-xs md:text-sm text-customAccent tracking-widest uppercase mb-4 px-3.5 py-1.5 rounded-full bg-customAccent/10 border border-customAccent/20 font-semibold">
@@ -139,24 +136,26 @@ export default function Contact({ dict, wpData }) {
                 </div>
               </div>
 
-              <div className="pt-4">
-                <a
-                  href={whatsappUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-3 bg-[#25D366] text-white px-8 py-4 font-mono text-xs uppercase tracking-widest hover:opacity-90 transition-all font-extrabold rounded-2xl shadow-lg hover:shadow-xl"
-                >
-                  <span className="material-symbols-outlined text-lg">
-                    chat
-                  </span>
-                  {dict?.whatsapp || 'WHATSAPP DESK'}
-                </a>
-              </div>
+              {whatsappUrl && (
+                <div className="pt-4">
+                  <a
+                    href={whatsappUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Contact via WhatsApp"
+                    className="inline-flex items-center gap-3 bg-[#25D366] text-white px-8 py-4 font-mono text-xs uppercase tracking-widest hover:opacity-90 transition-all font-extrabold rounded-2xl shadow-lg hover:shadow-xl"
+                  >
+                    <span className="material-symbols-outlined text-lg">
+                      chat
+                    </span>
+                    {dict?.whatsapp || 'WHATSAPP DESK'}
+                  </a>
+                </div>
+              )}
             </div>
           </div>
         </FadeIn>
 
-        {/* Sağ Taraf: Modern Cam Efektli İletişim Formu */}
         <FadeIn direction="up">
           <div className="bg-customSurface/60 backdrop-blur-xl p-8 md:p-12 border border-customBorder/80 rounded-3xl shadow-2xl relative z-10">
             <form ref={formRef} onSubmit={sendEmail} className="space-y-6">
@@ -241,7 +240,6 @@ export default function Contact({ dict, wpData }) {
                   : dict?.btnSend || 'SEND INQUIRY'}
               </button>
 
-              {/* Bildirim Mesajları */}
               {submitStatus === 'success' && (
                 <p className="text-emerald-400 font-mono text-xs font-bold text-center mt-4 bg-emerald-500/10 border border-emerald-500/30 py-3 rounded-xl">
                   {dict?.msgSuccess ||

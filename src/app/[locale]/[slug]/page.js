@@ -63,7 +63,7 @@ export default async function PostDetailPage({ params }) {
     <main className="min-h-screen bg-customBg text-customText pt-36 pb-20 px-6 md:px-12 flex flex-col justify-between">
       <div className="max-w-4xl mx-auto w-full mb-20">
         <Link
-          href={`/${locale}`}
+          href={`/${locale}#news`}
           className="inline-flex items-center gap-2 font-mono text-xs text-customAccent font-bold uppercase mb-8 hover:underline"
         >
           ← {locale === 'tr' ? 'Ana Sayfaya Dön' : 'Back to Home'}

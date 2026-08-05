@@ -17,11 +17,87 @@ const spaceGrotesk = Space_Grotesk({
   variable: '--font-heading',
 });
 
-export const metadata = {
-  title: 'ACUNENGY SHIPPING | Global Maritime Solutions',
-  description:
-    'Global Maritime Logistics, Ship Agency, & Heavy Lift Excellence',
+// Adım 3: Mobil Tarayıcı Adres Çubuğu Rengi
+export const viewport = {
+  themeColor: '#020617',
+  width: 'device-width',
+  initialScale: 1,
 };
+
+// Adım 2: Dinamik OpenGraph ve Meta Etiketleri
+export async function generateMetadata({ params }) {
+  const resolvedParams = await params;
+  const locale = resolvedParams?.locale || 'tr';
+  const isTr = locale === 'tr';
+
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://acunengy.com';
+
+  const title = isTr
+    ? 'Acunengy Shipping & Maritime Services | Küresel Denizcilik & Lojistik'
+    : 'Acunengy Shipping & Maritime Services | Global Maritime & Logistics';
+
+  const description = isTr
+    ? 'Uluslararası ticaret koridorlarında küresel denizcilik çözümleri, ağır yük mühendisliği ve tavizsiz liman acenteliği hizmetleri.'
+    : 'Global maritime solutions, heavy-lift engineering, and uncompromised port agency services across international trade corridors.';
+
+  return {
+    metadataBase: new URL(siteUrl),
+    title: {
+      default: title,
+      template: '%s | Acunengy Shipping',
+    },
+    description: description,
+    keywords: [
+      'Maritime Services',
+      'Ship Agency',
+      'Port Agency',
+      'Heavy Lift',
+      'Project Cargo',
+      'Denizcilik Hizmetleri',
+      'Liman Acenteliği',
+      'Gemi Acenteliği',
+      'Acunengy',
+    ],
+    authors: [{ name: 'Oğuzhan Şahin' }],
+    creator: 'Oğuzhan Şahin',
+
+    openGraph: {
+      title: title,
+      description: description,
+      url: `${siteUrl}/${locale}`,
+      siteName: 'Acunengy Shipping',
+      images: [
+        {
+          url: `${siteUrl}/images/logo.png`,
+          width: 1200,
+          height: 630,
+          alt: 'Acunengy Shipping & Maritime Services',
+        },
+      ],
+      locale: isTr ? 'tr_TR' : 'en_US',
+      type: 'website',
+    },
+
+    twitter: {
+      card: 'summary_large_image',
+      title: title,
+      description: description,
+      images: [`${siteUrl}/images/logo.png`],
+    },
+
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-video-preview': -1,
+        'max-image-preview': 'large',
+        'max-snippet': -1,
+      },
+    },
+  };
+}
 
 export default async function RootLayout({ children, params }) {
   const resolvedParams = await params;

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import emailjs from '@emailjs/browser';
 
 export default function QuoteModal({ isOpen, onClose }) {
   const [step, setStep] = useState(1);
@@ -17,6 +18,7 @@ export default function QuoteModal({ isOpen, onClose }) {
   });
 
   const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
   if (!isOpen) return null;
@@ -56,14 +58,45 @@ export default function QuoteModal({ isOpen, onClose }) {
     }
 
     setErrors({});
-    setIsSubmitted(true);
+    setIsSubmitting(true);
 
-    // Otomatik kapanma süresi 5 saniyeye (5000ms) çıkarıldı
-    setTimeout(() => {
-      setIsSubmitted(false);
-      setStep(1);
-      onClose();
-    }, 5000);
+    // EmailJS Şablonuna Uyarlanmış Gönderim
+    emailjs
+      .send(
+        process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID,
+        process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID,
+        {
+          user_name: formData.name,
+          user_email: formData.email,
+          user_service: `[TEKLİF MODALI] ${selectedService}`,
+          message: `🚢 Gemi / IMO: ${formData.vesselName}\n📍 Hedef Liman: ${formData.port}\n📝 Ek Notlar: ${formData.message || 'Belirtilmedi'}`,
+        },
+        process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY,
+      )
+      .then(
+        () => {
+          setIsSubmitting(false);
+          setIsSubmitted(true);
+
+          setTimeout(() => {
+            setIsSubmitted(false);
+            setStep(1);
+            setFormData({
+              vesselName: '',
+              port: '',
+              name: '',
+              email: '',
+              message: '',
+            });
+            onClose();
+          }, 4000);
+        },
+        (error) => {
+          setIsSubmitting(false);
+          console.error('Modal EmailJS Error:', error);
+          setErrors({ submit: 'Transmission failed. Please try again.' });
+        },
+      );
   };
 
   const services = [
@@ -97,7 +130,6 @@ export default function QuoteModal({ isOpen, onClose }) {
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 15 }}
           transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-          /* max-h-[75vh] ile yüksekliği küçültüldü, mt-16 ile Navbar'dan mesafe bırakıldı */
           className="relative w-full max-w-2xl max-h-[75vh] mt-16 md:mt-20 overflow-y-auto custom-scrollbar bg-customSurface border border-customBorder/80 rounded-[2rem] md:rounded-[2.5rem] shadow-[0_25px_60px_-15px_rgba(0,0,0,0.5)] p-6 md:p-8 text-customText backdrop-blur-3xl"
         >
           {/* Üst Kısım: Durum ve Kapatma */}
@@ -357,21 +389,29 @@ export default function QuoteModal({ isOpen, onClose }) {
                         className="w-full bg-customBg border border-customBorder rounded-xl p-3.5 text-sm focus:outline-none focus:border-customAccent text-customText transition-colors resize-none placeholder:text-customMuted/40 font-medium"
                       />
                     </div>
+
+                    {errors.submit && (
+                      <p className="text-red-500 font-mono text-xs font-bold text-center">
+                        {errors.submit}
+                      </p>
+                    )}
                   </div>
 
                   <div className="pt-2 flex justify-between items-center">
                     <button
                       type="button"
+                      disabled={isSubmitting}
                       onClick={handlePrev}
-                      className="px-5 py-3 bg-slate-800 dark:bg-transparent border border-slate-700 dark:border-customBorder text-white dark:text-customMuted hover:text-white dark:hover:text-customText text-xs font-mono uppercase font-bold rounded-xl transition-all cursor-pointer"
+                      className="px-5 py-3 bg-slate-800 dark:bg-transparent border border-slate-700 dark:border-customBorder text-white dark:text-customMuted hover:text-white dark:hover:text-customText text-xs font-mono uppercase font-bold rounded-xl transition-all cursor-pointer disabled:opacity-50"
                     >
                       ← Back
                     </button>
                     <button
                       type="submit"
-                      className="px-7 py-3 bg-customAccent text-white font-mono text-xs uppercase tracking-widest font-black rounded-xl hover:brightness-110 shadow-xl shadow-customAccent/30 transition-all cursor-pointer"
+                      disabled={isSubmitting}
+                      className="px-7 py-3 bg-customAccent text-white font-mono text-xs uppercase tracking-widest font-black rounded-xl hover:brightness-110 shadow-xl shadow-customAccent/30 transition-all cursor-pointer disabled:opacity-50 flex items-center gap-2"
                     >
-                      DISPATCH TENDER ✓
+                      {isSubmitting ? 'TRANSMITTING...' : 'DISPATCH TENDER ✓'}
                     </button>
                   </div>
                 </form>

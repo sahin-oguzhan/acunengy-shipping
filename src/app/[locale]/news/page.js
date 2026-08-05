@@ -85,8 +85,9 @@ export default async function NewsArchivePage({ params }) {
   return (
     <main className="min-h-screen bg-customBg text-customText pt-36 pb-20 px-6 md:px-16 flex flex-col justify-between">
       <div className="max-w-7xl mx-auto w-full mb-20">
+        {/* Ana Sayfa Bülten Bölümüne Yönlendiren Link */}
         <Link
-          href={`/${locale}`}
+          href={`/${locale}#news`}
           className="inline-flex items-center gap-2 font-mono text-xs text-customAccent font-bold uppercase mb-8 hover:underline"
         >
           ← {currentLang === 'tr' ? 'Ana Sayfaya Dön' : 'Back to Home'}
