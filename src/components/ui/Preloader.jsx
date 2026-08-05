@@ -5,15 +5,27 @@ import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Preloader() {
-  const [isLoading, setIsLoading] = useState(true);
+  // İlk state'i tanımlarken sessionStorage kontrolü yapıyoruz.
+  // Böylece dil değişiminde isLoading en başta false başlayacak ve ekran anlık bile sıçramayacak.
+  const [isLoading, setIsLoading] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return !sessionStorage.getItem('acunengy_preloaded');
+    }
+    return true;
+  });
 
   useEffect(() => {
+    if (!isLoading) return;
+
     const timer = setTimeout(() => {
       setIsLoading(false);
+      sessionStorage.setItem('acunengy_preloaded', 'true');
     }, 2000);
 
     return () => clearTimeout(timer);
-  }, []);
+  }, [isLoading]);
+
+  if (!isLoading) return null;
 
   return (
     <AnimatePresence>

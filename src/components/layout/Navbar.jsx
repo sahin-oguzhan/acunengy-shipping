@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import ThemeToggle from '@/components/layout/ThemeToggle';
 
@@ -11,6 +11,7 @@ export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const pathname = usePathname();
+  const router = useRouter();
   const currentLocale = pathname?.startsWith('/en') ? 'en' : 'tr';
 
   const navItems = useMemo(
@@ -67,12 +68,14 @@ export default function Navbar() {
     }
   }, []);
 
+  // Soft Navigation: scroll: false ile sayfa pozisyonunu koruyarak dil değiştirme
   const toggleLanguage = useCallback(() => {
     const nextLocale = currentLocale === 'tr' ? 'en' : 'tr';
     const cleanPath = pathname.replace(/^\/(tr|en)/, '');
-    const newUrl = `${window.location.origin}/${nextLocale}${cleanPath || ''}`;
-    window.location.href = newUrl;
-  }, [currentLocale, pathname]);
+    const newPath = `/${nextLocale}${cleanPath || ''}`;
+
+    router.push(newPath, { scroll: false });
+  }, [currentLocale, pathname, router]);
 
   return (
     <header className="fixed top-6 inset-x-0 z-50 flex justify-center px-4 md:px-8 transition-all duration-300">

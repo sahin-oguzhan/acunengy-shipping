@@ -17,14 +17,12 @@ const spaceGrotesk = Space_Grotesk({
   variable: '--font-heading',
 });
 
-// Adım 3: Mobil Tarayıcı Adres Çubuğu Rengi
 export const viewport = {
   themeColor: '#020617',
   width: 'device-width',
   initialScale: 1,
 };
 
-// Adım 2: Dinamik OpenGraph ve Meta Etiketleri
 export async function generateMetadata({ params }) {
   const resolvedParams = await params;
   const locale = resolvedParams?.locale || 'tr';
