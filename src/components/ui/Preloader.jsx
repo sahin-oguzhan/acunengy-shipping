@@ -4,38 +4,28 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 
 export default function Preloader() {
-  const [isLoading, setIsLoading] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return !sessionStorage.getItem('hasLoaded');
-    }
-    return true;
-  });
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    // F5 veya sayfa yenileme durumunu kontrol et
+    const navEntry = performance.getEntriesByType('navigation')[0];
+    const isReload = navEntry && navEntry.type === 'reload';
+
     const hasLoaded = sessionStorage.getItem('hasLoaded');
-    if (hasLoaded) {
+
+    // Eğer sayfa yenilenmediyse (normal site içi geçiş veya dil değişimi) ve daha önceden yüklendiyse hiç gösterme
+    if (hasLoaded && !isReload) {
+      setIsLoading(false);
       return;
     }
 
-    const finishLoading = () => {
+    // İlk giriş veya F5 atıldığında preloader'ı göster ve 1.2 saniye sonra kapat
+    const timer = setTimeout(() => {
       setIsLoading(false);
       sessionStorage.setItem('hasLoaded', 'true');
-    };
+    }, 1200);
 
-    if (document.readyState === 'complete') {
-      finishLoading();
-    } else {
-      window.addEventListener('load', finishLoading);
-    }
-
-    const safetyTimer = setTimeout(() => {
-      finishLoading();
-    }, 2000);
-
-    return () => {
-      window.removeEventListener('load', finishLoading);
-      clearTimeout(safetyTimer);
-    };
+    return () => clearTimeout(timer);
   }, []);
 
   if (!isLoading) return null;

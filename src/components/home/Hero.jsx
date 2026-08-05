@@ -17,7 +17,6 @@ export default function Hero({ wpData }) {
   const rawTitle = heroData?.heroTitle || '';
   const displaySubtitle = heroData?.heroSubtitle || '';
   const displayBtnQuote = heroData?.heroBtnText || '';
-  const videoUrl = heroData?.heroVideoUrl || '';
 
   const displayBtnServices =
     heroData?.heroBtnServicesText ||
@@ -41,20 +40,26 @@ export default function Hero({ wpData }) {
       id="hero"
       className="relative h-screen min-h-[750px] w-full flex items-center overflow-hidden bg-slate-950"
     >
-      <div className="absolute inset-0 z-0 overflow-hidden">
+      <div className="absolute inset-0 z-0 overflow-hidden bg-slate-950">
+        {/* Mobilde gizlenir, sadece tablet ve masaüstünde oynatılır */}
         <video
           autoPlay
           loop
           muted
           playsInline
           preload="none"
-          className="w-full h-full object-cover object-center scale-105"
+          className="hidden md:block w-full h-full object-cover object-center scale-105"
         >
           <source src={videoSrc} type="video/mp4" />
         </video>
 
-        <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent z-10 pointer-events-none" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/30 z-10 pointer-events-none" />
+        {/* Mobilde ve arkada şık, kendini belli eden modern denizcilik ışık efekti */}
+        <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-[350px] sm:w-[600px] h-[350px] sm:h-[600px] bg-cyan-600/25 rounded-full blur-[90px] pointer-events-none" />
+        <div className="absolute top-1/2 right-0 w-[300px] h-[300px] bg-sky-500/20 rounded-full blur-[100px] pointer-events-none" />
+
+        {/* Üst katman gölgelendirmeleri */}
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-950/90 via-slate-950/50 to-transparent z-10 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-slate-950/40 z-10 pointer-events-none" />
       </div>
 
       <div className="relative z-20 max-w-7xl w-full mx-auto px-6 md:px-16 pt-20 flex flex-col items-start">
