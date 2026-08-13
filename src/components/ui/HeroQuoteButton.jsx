@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import QuoteModal from '@/components/ui/QuoteModal';
 
-export default function HeroQuoteButton({ label }) {
+export default function HeroQuoteButton({ label, locale = 'tr' }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
@@ -17,7 +17,11 @@ export default function HeroQuoteButton({ label }) {
       </button>
 
       {/* Teklif Alma Modalı */}
-      <QuoteModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+      <QuoteModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        locale={locale}
+      />
     </>
   );
 }

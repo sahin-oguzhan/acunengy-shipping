@@ -4,10 +4,31 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import emailjs from '@emailjs/browser';
 
-export default function QuoteModal({ isOpen, onClose }) {
+export default function QuoteModal({ isOpen, onClose, locale = 'tr' }) {
+  const isTr = locale.toLowerCase() === 'tr';
+
+  const defaultServices = [
+    {
+      id: 'ship-agency',
+      title: isTr ? 'Gemi Acenteliği' : 'Ship Agency',
+      desc: isTr
+        ? 'Liman giriş-çıkış formaliteleri, gümrük evrakları ve boğaz transit geçiş klerens işlemleri.'
+        : 'Port entrance/exit clearance, customs formalities, and Turkish straits transit clearance.',
+      icon: 'directions_boat',
+    },
+    {
+      id: 'project-cargo',
+      title: isTr ? 'Proje Kargo Koordinasyonu' : 'Project Cargo Coordination',
+      desc: isTr
+        ? 'Ağır yük, gabari dışı kargo ve rüzgar enerjisi ekipmanlarının taşıma planlaması.'
+        : 'Transport planning and coordination for heavy-lift, out-of-gauge, and wind energy equipment.',
+      icon: 'precision_manufacturing',
+    },
+  ];
+
   const [step, setStep] = useState(1);
   const [selectedService, setSelectedService] = useState(
-    'Ship Agency & Husbandry',
+    defaultServices[0].title,
   );
   const [formData, setFormData] = useState({
     vesselName: '',
@@ -27,8 +48,13 @@ export default function QuoteModal({ isOpen, onClose }) {
     let newErrors = {};
     if (step === 2) {
       if (!formData.vesselName.trim())
-        newErrors.vesselName = 'Vessel name is required.';
-      if (!formData.port.trim()) newErrors.port = 'Target port is required.';
+        newErrors.vesselName = isTr
+          ? 'Gemi adı zorunludur.'
+          : 'Vessel name is required.';
+      if (!formData.port.trim())
+        newErrors.port = isTr
+          ? 'Hedef liman zorunludur.'
+          : 'Target port is required.';
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -48,9 +74,12 @@ export default function QuoteModal({ isOpen, onClose }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     let newErrors = {};
-    if (!formData.name.trim()) newErrors.name = 'Full name is required.';
+    if (!formData.name.trim())
+      newErrors.name = isTr ? 'Ad Soyad zorunludur.' : 'Full name is required.';
     if (!formData.email.trim())
-      newErrors.email = 'Corporate email is required.';
+      newErrors.email = isTr
+        ? 'E-posta adresi zorunludur.'
+        : 'Corporate email is required.';
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -60,7 +89,6 @@ export default function QuoteModal({ isOpen, onClose }) {
     setErrors({});
     setIsSubmitting(true);
 
-    // EmailJS Şablonuna Uyarlanmış Gönderim
     emailjs
       .send(
         process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID,
@@ -94,33 +122,14 @@ export default function QuoteModal({ isOpen, onClose }) {
         (error) => {
           setIsSubmitting(false);
           console.error('Modal EmailJS Error:', error);
-          setErrors({ submit: 'Transmission failed. Please try again.' });
+          setErrors({
+            submit: isTr
+              ? 'Gönderim başarısız oldu. Lütfen tekrar deneyin.'
+              : 'Transmission failed. Please try again.',
+          });
         },
       );
   };
-
-  const services = [
-    {
-      title: 'Ship Agency & Husbandry',
-      desc: 'Port clearance, crew changes, and bunker operations.',
-      icon: 'anchor',
-    },
-    {
-      title: 'Technical Support & Spares',
-      desc: 'OEM certified marine engineering and logistics.',
-      icon: 'precision_manufacturing',
-    },
-    {
-      title: 'Project Cargo & Heavy Lift',
-      desc: 'OOG transport, wind turbines, and industrial assets.',
-      icon: 'directions_boat',
-    },
-    {
-      title: 'Maritime Survey & Inspection',
-      desc: 'Draft surveys, off-hire evaluations, and safety audits.',
-      icon: 'verified_user',
-    },
-  ];
 
   return (
     <AnimatePresence>
@@ -132,12 +141,12 @@ export default function QuoteModal({ isOpen, onClose }) {
           transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
           className="relative w-full max-w-2xl max-h-[75vh] mt-16 md:mt-20 overflow-y-auto custom-scrollbar bg-customSurface border border-customBorder/80 rounded-[2rem] md:rounded-[2.5rem] shadow-[0_25px_60px_-15px_rgba(0,0,0,0.5)] p-6 md:p-8 text-customText backdrop-blur-3xl"
         >
-          {/* Üst Kısım: Durum ve Kapatma */}
           <div className="flex items-center justify-between pb-4 mb-5 border-b border-customBorder/80">
             <div className="flex items-center gap-3">
               <span className="w-2.5 h-2.5 rounded-full bg-customAccent animate-pulse shadow-[0_0_10px_var(--customAccent)]" />
               <span className="font-mono text-[10px] md:text-xs uppercase tracking-widest text-customAccent font-extrabold">
-                EXECUTIVE DESK // STEP {step} OF 3
+                {isTr ? 'OPERASYON MASASI' : 'EXECUTIVE DESK'} //{' '}
+                {isTr ? 'ADIM' : 'STEP'} {step} / 3
               </span>
             </div>
             <button
@@ -150,33 +159,35 @@ export default function QuoteModal({ isOpen, onClose }) {
 
           {!isSubmitted ? (
             <div>
-              {/* ADIM 1 */}
               {step === 1 && (
                 <div className="space-y-5">
                   <div>
                     <h3 className="text-xl md:text-2xl font-black font-heading tracking-tight mb-1">
-                      Select Operation Framework
+                      {isTr
+                        ? 'Hizmet Türü Seçiniz'
+                        : 'Select Service Framework'}
                     </h3>
                     <p className="text-customMuted text-xs">
-                      Choose the primary maritime division required for your
-                      fleet.
+                      {isTr
+                        ? 'Operasyonunuz için gerekli olan ana hizmet alanını belirleyin.'
+                        : 'Choose the primary maritime division required for your operation.'}
                     </p>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {services.map((srv) => (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {defaultServices.map((srv) => (
                       <div
-                        key={srv.title}
+                        key={srv.id}
                         onClick={() => setSelectedService(srv.title)}
-                        className={`p-4 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between group ${
+                        className={`p-5 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between group ${
                           selectedService === srv.title
                             ? 'border-customAccent bg-customAccent/10 shadow-lg shadow-customAccent/5'
                             : 'border-customBorder hover:border-customAccent/40 bg-customBg/50'
                         }`}
                       >
-                        <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center justify-between mb-3">
                           <span
-                            className={`material-symbols-outlined text-2xl transition-colors ${
+                            className={`material-symbols-outlined text-3xl transition-colors ${
                               selectedService === srv.title
                                 ? 'text-customAccent'
                                 : 'text-customMuted group-hover:text-customText'
@@ -185,9 +196,9 @@ export default function QuoteModal({ isOpen, onClose }) {
                             {srv.icon}
                           </span>
                           <div
-                            className={`w-4 h-4 rounded-full border flex items-center justify-center ${
+                            className={`w-5 h-5 rounded-full border flex items-center justify-center ${
                               selectedService === srv.title
-                                ? 'border-customAccent bg-customAccent text-slate-950 font-bold text-[10px]'
+                                ? 'border-customAccent bg-customAccent text-slate-950 font-bold text-xs'
                                 : 'border-customBorder'
                             }`}
                           >
@@ -195,10 +206,10 @@ export default function QuoteModal({ isOpen, onClose }) {
                           </div>
                         </div>
                         <div>
-                          <h4 className="font-bold text-xs md:text-sm tracking-tight mb-0.5 text-customText">
+                          <h4 className="font-bold text-sm md:text-base tracking-tight mb-1 text-customText">
                             {srv.title}
                           </h4>
-                          <p className="text-[11px] text-customMuted leading-tight">
+                          <p className="text-xs text-customMuted leading-relaxed">
                             {srv.desc}
                           </p>
                         </div>
@@ -212,33 +223,36 @@ export default function QuoteModal({ isOpen, onClose }) {
                       onClick={handleNext}
                       className="px-6 py-3 bg-customAccent text-white font-mono text-xs uppercase tracking-widest font-black rounded-xl hover:brightness-110 shadow-lg shadow-customAccent/20 transition-all cursor-pointer inline-flex items-center gap-2"
                     >
-                      Proceed to Parameters →
+                      {isTr ? 'Devam Et →' : 'Proceed to Parameters →'}
                     </button>
                   </div>
                 </div>
               )}
 
-              {/* ADIM 2 */}
               {step === 2 && (
                 <div className="space-y-5">
                   <div>
                     <h3 className="text-xl md:text-2xl font-black font-heading tracking-tight mb-1">
-                      Vessel & Location
+                      {isTr ? 'Gemi ve Lokasyon Bilgisi' : 'Vessel & Location'}
                     </h3>
                     <p className="text-customMuted text-xs">
-                      Provide vessel identification for terminal scheduling.
+                      {isTr
+                        ? 'Liman ve terminal planlaması için gemi detaylarını giriniz.'
+                        : 'Provide vessel identification for terminal scheduling.'}
                     </p>
                   </div>
 
                   <div className="space-y-4">
                     <div className="space-y-1">
                       <label className="font-mono text-xs text-customMuted uppercase font-bold tracking-wider block">
-                        Vessel Name / IMO Number{' '}
+                        {isTr
+                          ? 'Gemi Adı / IMO Numarası'
+                          : 'Vessel Name / IMO Number'}{' '}
                         <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="text"
-                        placeholder="e.g. MV ACUNENGY / IMO 9876543"
+                        placeholder="Örn: MV ACUNENGY / IMO 9876543"
                         value={formData.vesselName}
                         onChange={(e) => {
                           setFormData({
@@ -263,12 +277,14 @@ export default function QuoteModal({ isOpen, onClose }) {
 
                     <div className="space-y-1">
                       <label className="font-mono text-xs text-customMuted uppercase font-bold tracking-wider block">
-                        Target Port / Terminal{' '}
+                        {isTr
+                          ? 'Hedef Liman / Terminal'
+                          : 'Target Port / Terminal'}{' '}
                         <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="text"
-                        placeholder="e.g. Alsancak Port / Nemrut Bay"
+                        placeholder="Örn: Alsancak Limanı / Nemrut Körfezi"
                         value={formData.port}
                         onChange={(e) => {
                           setFormData({ ...formData, port: e.target.value });
@@ -294,29 +310,29 @@ export default function QuoteModal({ isOpen, onClose }) {
                       onClick={handlePrev}
                       className="px-5 py-3 bg-slate-800 dark:bg-transparent border border-slate-700 dark:border-customBorder text-white dark:text-customMuted hover:text-white dark:hover:text-customText text-xs font-mono uppercase font-bold rounded-xl transition-all cursor-pointer"
                     >
-                      ← Back
+                      ← {isTr ? 'Geri' : 'Back'}
                     </button>
                     <button
                       type="button"
                       onClick={handleNext}
                       className="px-6 py-3 bg-customAccent text-white font-mono text-xs uppercase tracking-widest font-black rounded-xl hover:brightness-110 shadow-lg shadow-customAccent/20 transition-all cursor-pointer"
                     >
-                      Continue →
+                      {isTr ? 'Devam Et →' : 'Continue →'}
                     </button>
                   </div>
                 </div>
               )}
 
-              {/* ADIM 3 */}
               {step === 3 && (
                 <form onSubmit={handleSubmit} className="space-y-5">
                   <div>
                     <h3 className="text-xl md:text-2xl font-black font-heading tracking-tight mb-1">
-                      Representative Details
+                      {isTr ? 'İletişim Bilgileri' : 'Representative Details'}
                     </h3>
                     <p className="text-customMuted text-xs">
-                      Where should our commercial desk transmit the official
-                      estimate?
+                      {isTr
+                        ? 'Resmi teklif özetinin iletileceği yetkili bilgilerini giriniz.'
+                        : 'Where should our commercial desk transmit the official estimate?'}
                     </p>
                   </div>
 
@@ -324,11 +340,14 @@ export default function QuoteModal({ isOpen, onClose }) {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div className="space-y-1">
                         <label className="font-mono text-xs text-customMuted uppercase font-bold tracking-wider block">
-                          Full Name <span className="text-red-500">*</span>
+                          {isTr ? 'Ad Soyad' : 'Full Name'}{' '}
+                          <span className="text-red-500">*</span>
                         </label>
                         <input
                           type="text"
-                          placeholder="Captain / Manager"
+                          placeholder={
+                            isTr ? 'Kaptan / Yetkili' : 'Captain / Manager'
+                          }
                           value={formData.name}
                           onChange={(e) => {
                             setFormData({ ...formData, name: e.target.value });
@@ -349,7 +368,7 @@ export default function QuoteModal({ isOpen, onClose }) {
                       </div>
                       <div className="space-y-1">
                         <label className="font-mono text-xs text-customMuted uppercase font-bold tracking-wider block">
-                          Corporate Email{' '}
+                          {isTr ? 'Kurumsal E-posta' : 'Corporate Email'}{' '}
                           <span className="text-red-500">*</span>
                         </label>
                         <input
@@ -377,11 +396,17 @@ export default function QuoteModal({ isOpen, onClose }) {
 
                     <div className="space-y-1">
                       <label className="font-mono text-xs text-customMuted uppercase font-bold tracking-wider block">
-                        Additional Scope / Remarks
+                        {isTr
+                          ? 'Ek Notlar / Detaylar'
+                          : 'Additional Scope / Remarks'}
                       </label>
                       <textarea
                         rows={2}
-                        placeholder="Laycan dates, specific cargo constraints..."
+                        placeholder={
+                          isTr
+                            ? 'Laycan tarihleri, özel kargo gereksinimleri...'
+                            : 'Laycan dates, specific cargo constraints...'
+                        }
                         value={formData.message}
                         onChange={(e) =>
                           setFormData({ ...formData, message: e.target.value })
@@ -404,14 +429,20 @@ export default function QuoteModal({ isOpen, onClose }) {
                       onClick={handlePrev}
                       className="px-5 py-3 bg-slate-800 dark:bg-transparent border border-slate-700 dark:border-customBorder text-white dark:text-customMuted hover:text-white dark:hover:text-customText text-xs font-mono uppercase font-bold rounded-xl transition-all cursor-pointer disabled:opacity-50"
                     >
-                      ← Back
+                      ← {isTr ? 'Geri' : 'Back'}
                     </button>
                     <button
                       type="submit"
                       disabled={isSubmitting}
                       className="px-7 py-3 bg-customAccent text-white font-mono text-xs uppercase tracking-widest font-black rounded-xl hover:brightness-110 shadow-xl shadow-customAccent/30 transition-all cursor-pointer disabled:opacity-50 flex items-center gap-2"
                     >
-                      {isSubmitting ? 'TRANSMITTING...' : 'DISPATCH TENDER ✓'}
+                      {isSubmitting
+                        ? isTr
+                          ? 'GÖNDERİLİYOR...'
+                          : 'TRANSMITTING...'
+                        : isTr
+                          ? 'TEKLİFİ GÖNDER ✓'
+                          : 'DISPATCH TENDER ✓'}
                     </button>
                   </div>
                 </form>
@@ -425,11 +456,12 @@ export default function QuoteModal({ isOpen, onClose }) {
                 </span>
               </div>
               <h3 className="text-2xl font-black font-heading tracking-tight text-customText">
-                Parameters Dispatched
+                {isTr ? 'Talebiniz Alındı' : 'Parameters Dispatched'}
               </h3>
               <p className="text-customMuted text-sm font-normal max-w-sm mx-auto leading-relaxed">
-                Executive port operations desk connection established. Official
-                response incoming within 2 hours.
+                {isTr
+                  ? 'Operasyon masamıza talebiniz iletildi. En kısa sürede sizinle iletişime geçilecektir.'
+                  : 'Executive port operations desk connection established. Official response incoming within 2 hours.'}
               </p>
             </div>
           )}

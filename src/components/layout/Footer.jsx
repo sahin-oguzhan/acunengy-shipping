@@ -95,47 +95,20 @@ export default function Footer({ dict, locale, wpData }) {
             </div>
           </div>
 
-          <div className="lg:col-span-2 space-y-4 lg:pl-4">
-            <h3 className="font-mono text-xs text-[#38bdf8] font-bold uppercase tracking-widest">
-              {isTr ? 'HİZMETLER' : 'SERVICES'}
-            </h3>
-            <ul className="space-y-2.5 text-sm text-gray-400 font-medium cursor-default">
-              {services.length > 0 ? (
-                services.map((service) => (
+          {services && services.length > 0 && (
+            <div className="lg:col-span-2 space-y-4 lg:pl-4">
+              <h3 className="font-mono text-xs text-[#38bdf8] font-bold uppercase tracking-widest">
+                {isTr ? 'HİZMETLER' : 'SERVICES'}
+              </h3>
+              <ul className="space-y-2.5 text-sm text-gray-400 font-medium cursor-default">
+                {services.map((service) => (
                   <li key={service.id}>
                     <span>{service.title}</span>
                   </li>
-                ))
-              ) : (
-                <>
-                  <li>
-                    <span>{isTr ? 'Gemi Acenteliği' : 'Ship Agency'}</span>
-                  </li>
-                  <li>
-                    <span>{isTr ? 'Proje Kargo' : 'Project Cargo'}</span>
-                  </li>
-                  <li>
-                    <span>{isTr ? 'Ağır Nakliyat' : 'Heavy Lift'}</span>
-                  </li>
-                  <li>
-                    <span>{isTr ? 'Offshore Destek' : 'Offshore Support'}</span>
-                  </li>
-                </>
-              )}
-            </ul>
-          </div>
-
-          <div className="lg:col-span-2 space-y-4">
-            <h3 className="font-mono text-xs text-[#38bdf8] font-bold uppercase tracking-widest">
-              {isTr ? 'UYUMLULUK' : 'COMPLIANCE'}
-            </h3>
-            <ul className="space-y-2.5 font-mono text-xs text-gray-400 font-medium">
-              <li>BIMCO Üyesi</li>
-              <li>ISO 9001:2015</li>
-              <li>ISO 14001 HSE</li>
-              <li>FONASBA Sertifikalı</li>
-            </ul>
-          </div>
+                ))}
+              </ul>
+            </div>
+          )}
 
           <div className="lg:col-span-4 space-y-4">
             <h3 className="font-mono text-xs text-[#38bdf8] font-bold uppercase tracking-widest">
@@ -161,7 +134,9 @@ export default function Footer({ dict, locale, wpData }) {
         <div className="pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between text-xs text-gray-400 font-mono gap-4">
           <p>
             © {currentYear} Acunengy Shipping & Maritime Services Inc.{' '}
-            {isTr ? 'Tüm hakları saklıdır.' : 'All rights reserved.'}
+            {isTr
+              ? '© 2026 Acunengy Shipping. Tüm hakları saklıdır. A Sınıfı Gemi Acentesi.'
+              : '© 2026 Acunengy Shipping. All rights reserved. Class-A Ship Agency.'}
           </p>
 
           <p className="text-gray-400">

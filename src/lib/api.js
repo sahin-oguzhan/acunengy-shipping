@@ -34,7 +34,6 @@ export async function getHomePageData(locale = 'tr') {
 
   const query = `
     query GetHomePageData($language: LanguageCodeFilterEnum!) {
-      # 1. Ana Sayfa ACF Alanları
       pages(where: { language: $language }, first: 50) {
         nodes {
           id
@@ -65,10 +64,16 @@ export async function getHomePageData(locale = 'tr') {
               title
               description
             }
-            fleetHeaderGroup {
+            approachGroup {
               badge
               title
               description
+              item1Title
+              item1Desc
+              item2Title
+              item2Desc
+              item3Title
+              item3Desc
             }
             newsHeaderGroup {
               badge
@@ -112,7 +117,6 @@ export async function getHomePageData(locale = 'tr') {
         }
       }
 
-      # 2. Hizmetler CPT
       services(where: { language: $language }, first: 100) {
         nodes {
           id
@@ -126,7 +130,6 @@ export async function getHomePageData(locale = 'tr') {
         }
       }
 
-      # 3. Uzmanlıklar CPT (%100 Gerçek Şema Uyumlu)
       specializations(where: { language: $language }, first: 20) {
         nodes {
           id
@@ -149,7 +152,6 @@ export async function getHomePageData(locale = 'tr') {
         }
       }
 
-      # 4. Sektörler CPT (industryFields Eklendi)
       industries(where: { language: $language }, first: 20) {
         nodes {
           id
@@ -168,27 +170,6 @@ export async function getHomePageData(locale = 'tr') {
         }
       }
 
-      # 5. Filo / Gemiler CPT
-      vessels(where: { language: $language }, first: 30) {
-        nodes {
-          id
-          title
-          slug
-          uri
-          featuredImage {
-            node {
-              sourceUrl
-            }
-          }
-          fleetFields {
-            category
-            vesselType
-            vesselStatus
-          }
-        }
-      }
-
-      # 6. WordPress Standart Posts (Limit 20'ye çıkarıldı)
       posts(where: { language: $language }, first: 20) {
         nodes {
           id
@@ -217,7 +198,6 @@ export async function getHomePageData(locale = 'tr') {
   const rawServices = data?.services?.nodes || [];
   const rawSpecs = data?.specializations?.nodes || [];
   const rawIndustries = data?.industries?.nodes || [];
-  const rawFleet = data?.vessels?.nodes || [];
   const rawPosts = data?.posts?.nodes || [];
 
   let homeNode = allPages.find((p) => {
@@ -247,10 +227,6 @@ export async function getHomePageData(locale = 'tr') {
     currentLang === 'en' ? i.uri?.includes('/en/') : !i.uri?.includes('/en/'),
   );
 
-  const filteredFleet = rawFleet.filter((f) =>
-    currentLang === 'en' ? f.uri?.includes('/en/') : !f.uri?.includes('/en/'),
-  );
-
   const filteredPosts = rawPosts
     .filter((p) =>
       currentLang === 'en' ? p.uri?.includes('/en/') : !p.uri?.includes('/en/'),
@@ -260,7 +236,6 @@ export async function getHomePageData(locale = 'tr') {
   return {
     pageFields: homeNode?.homepageFields || null,
     servicesList: filteredServices,
-    fleetList: filteredFleet,
     industriesList: filteredIndustries,
     specializationsList: filteredSpecs,
     newsList: filteredPosts,

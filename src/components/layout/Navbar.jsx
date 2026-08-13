@@ -22,7 +22,10 @@ export default function Navbar() {
         id: 'services',
         label: currentLocale === 'tr' ? 'HİZMETLER' : 'SERVICES',
       },
-      { id: 'fleet', label: currentLocale === 'tr' ? 'FİLO' : 'FLEET' },
+      {
+        id: 'approach',
+        label: currentLocale === 'tr' ? 'YAKLAŞIMIMIZ' : 'APPROACH',
+      },
       { id: 'news', label: currentLocale === 'tr' ? 'BÜLTEN' : 'INSIGHTS' },
       { id: 'contact', label: currentLocale === 'tr' ? 'İLETİŞİM' : 'CONTACT' },
     ],

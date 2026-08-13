@@ -4,13 +4,13 @@ import Stats from '@/components/home/Stats';
 import Services from '@/components/home/Services';
 import Specializations from '@/components/home/Specializations';
 import Industries from '@/components/home/Industries';
-import FleetOperations from '@/components/home/FleetOperations';
 import News from '@/components/home/News';
 import Contact from '@/components/home/Contact';
 import EmergencyWidget from '@/components/layout/EmergencyWidget';
 import Footer from '@/components/layout/Footer';
 import { getDictionary } from '@/dictionaries/getDictionary';
 import { getHomePageData } from '@/lib/api';
+import Approach from '@/components/home/Approach';
 
 export default async function Home({ params }) {
   const resolvedParams = await params;
@@ -43,8 +43,8 @@ export default async function Home({ params }) {
 
       <Industries dict={dict.industries} locale={locale} wpData={wpData} />
 
-      <section id="fleet">
-        <FleetOperations dict={dict.fleet} locale={locale} wpData={wpData} />
+      <section id="approach">
+        <Approach dict={dict.fleet} locale={locale} wpData={wpData} />
       </section>
 
       <section id="news">
@@ -52,7 +52,7 @@ export default async function Home({ params }) {
       </section>
 
       <section id="contact">
-        <Contact dict={dict.contact} wpData={wpData} />
+        <Contact dict={dict.contact} wpData={wpData} locale={locale} />
       </section>
 
       <EmergencyWidget wpData={wpData} />

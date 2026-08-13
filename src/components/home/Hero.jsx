@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 import FadeIn from '@/components/ui/FadeIn';
 import HeroQuoteButton from '@/components/ui/HeroQuoteButton';
 
-export default function Hero({ wpData }) {
+export default function Hero({ wpData, locale }) {
   const pathname = usePathname();
   const currentLocale = pathname?.startsWith('/en') ? 'en' : 'tr';
 
@@ -91,7 +91,7 @@ export default function Hero({ wpData }) {
             <div className="flex flex-wrap items-center gap-4">
               {displayBtnQuote && (
                 <div className="[&_button]:!bg-customAccent [&_button]:!text-white [&_button]:!rounded-full [&_button]:!px-9 [&_button]:!py-4 [&_button]:!font-bold [&_button]:!text-sm [&_button]:!shadow-[0_0_30px_rgba(56,189,248,0.4)] hover:[&_button]:!brightness-110 transition-all">
-                  <HeroQuoteButton label={displayBtnQuote} />
+                  <HeroQuoteButton label={displayBtnQuote} locale={locale} />
                 </div>
               )}
 
