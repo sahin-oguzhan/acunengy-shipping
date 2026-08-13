@@ -133,7 +133,6 @@ export default function Footer({ dict, locale, wpData }) {
 
         <div className="pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between text-xs text-gray-400 font-mono gap-4">
           <p>
-            © {currentYear} Acunengy Shipping & Maritime Services Inc.{' '}
             {isTr
               ? '© 2026 Acunengy Shipping. Tüm hakları saklıdır. A Sınıfı Gemi Acentesi.'
               : '© 2026 Acunengy Shipping. All rights reserved. Class-A Ship Agency.'}
