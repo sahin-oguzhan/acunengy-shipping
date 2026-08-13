@@ -145,7 +145,7 @@ export default function QuoteModal({ isOpen, onClose, locale = 'tr' }) {
             <div className="flex items-center gap-3">
               <span className="w-2.5 h-2.5 rounded-full bg-customAccent animate-pulse shadow-[0_0_10px_var(--customAccent)]" />
               <span className="font-mono text-[10px] md:text-xs uppercase tracking-widest text-customAccent font-extrabold">
-                {isTr ? 'OPERASYON MASASI' : 'EXECUTIVE DESK'} //{' '}
+                {isTr ? 'OPERASYON MASASI' : 'EXECUTIVE DESK'} /{' '}
                 {isTr ? 'ADIM' : 'STEP'} {step} / 3
               </span>
             </div>

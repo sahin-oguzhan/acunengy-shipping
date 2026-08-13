@@ -10,6 +10,9 @@ export function ThemeProvider({ children }) {
       defaultTheme="dark"
       enableSystem={false}
       disableTransitionOnChange
+      scriptProps={{
+        'data-cfasync': 'false',
+      }}
     >
       {children}
     </NextThemeProvider>
