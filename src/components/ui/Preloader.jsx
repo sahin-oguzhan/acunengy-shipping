@@ -39,7 +39,7 @@ export default function Preloader() {
           alt="Acunengy Shipping Logo"
           fill
           priority
-          className="object-contain"
+          className="object-contain brightness-0 invert"
         />
       </div>
     </div>
