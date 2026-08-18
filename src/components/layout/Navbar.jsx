@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import ThemeToggle from '@/components/layout/ThemeToggle';
 
 export default function Navbar() {
   const [activeSection, setActiveSection] = useState('hero');
@@ -100,7 +99,7 @@ export default function Navbar() {
                 onClick={(e) => scrollToSection(e, item.id)}
                 className={`relative px-4 py-2 text-[13px] font-mono tracking-wider transition-colors duration-200 z-10 ${
                   isActive
-                    ? 'text-customBg dark:text-slate-950 font-extrabold'
+                    ? 'text-customBg font-extrabold'
                     : 'text-customText/80 font-semibold hover:text-customText'
                 }`}
               >
@@ -126,30 +125,24 @@ export default function Navbar() {
           <span className="text-lg md:text-xl text-customAccent">SHIPPING</span>
         </a>
 
+        {/* Masaüstü Dil Butonu */}
         <div className="hidden lg:flex items-center gap-4">
-          <div className="flex items-center justify-center w-10 h-10 rounded-full bg-customSurface/90 border border-customBorder text-customText shadow-md">
-            <ThemeToggle />
-          </div>
-
           <button
             type="button"
             onClick={toggleLanguage}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-customAccent text-customBg dark:bg-white dark:text-slate-950 font-mono text-sm font-extrabold tracking-widest hover:brightness-110 active:scale-95 transition-all shadow-lg border border-white/25 dark:border-white/50 cursor-pointer"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-customAccent text-customBg font-mono text-sm font-extrabold tracking-widest hover:brightness-110 active:scale-95 transition-all shadow-lg border border-white/25 cursor-pointer"
           >
-            <span className="text-slate-900 dark:text-slate-950">🌐</span>
+            <span className="text-slate-900">🌐</span>
             <span>{currentLocale === 'tr' ? 'EN' : 'TR'}</span>
           </button>
         </div>
 
+        {/* Mobil Dil ve Hamburger Menü */}
         <div className="flex lg:hidden items-center gap-3">
-          <div className="flex items-center justify-center w-9 h-9 rounded-full bg-customSurface/90 border border-customBorder text-customText shadow-md">
-            <ThemeToggle />
-          </div>
-
           <button
             type="button"
             onClick={toggleLanguage}
-            className="px-3.5 py-1.5 rounded-full bg-customAccent text-customBg dark:bg-white dark:text-slate-950 font-mono text-xs font-bold shadow-md flex items-center gap-1 cursor-pointer"
+            className="px-3.5 py-1.5 rounded-full bg-customAccent text-customBg font-mono text-xs font-bold shadow-md flex items-center gap-1 cursor-pointer"
           >
             <span>🌐</span>
             <span>{currentLocale === 'tr' ? 'EN' : 'TR'}</span>
@@ -175,7 +168,7 @@ export default function Navbar() {
               onClick={(e) => scrollToSection(e, item.id)}
               className={`px-4 py-3 rounded-xl text-sm font-mono tracking-wider font-semibold transition-all ${
                 activeSection === item.id
-                  ? 'text-customBg dark:text-slate-950 font-extrabold bg-customAccent shadow-sm'
+                  ? 'text-customBg font-extrabold bg-customAccent shadow-sm'
                   : 'text-customText hover:bg-customSurface'
               }`}
             >
