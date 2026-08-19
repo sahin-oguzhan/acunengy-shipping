@@ -9,9 +9,12 @@ export default function Hero({ wpData, locale }) {
   const pathname = usePathname();
   const currentLocale = pathname?.startsWith('/en') ? 'en' : 'tr';
 
-  const videoSrc = wpData?.videoUrl || '/videos/hero-video.mp4';
-
+  // 1. Önce heroData tanımlanmalı
   const heroData = wpData?.pageFields?.heroGroup;
+
+  // 2. Ardından heroData kullanılarak videoSrc tanımlanmalı
+  const videoSrc =
+    heroData?.heroVideoUrl || wpData?.videoUrl || '/videos/hero-video.mp4';
 
   const displayBadge = heroData?.heroBadge || '';
   const rawTitle = heroData?.heroTitle || '';

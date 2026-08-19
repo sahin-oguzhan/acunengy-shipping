@@ -4,22 +4,15 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 
 export default function Preloader() {
-  const [isLoading, setIsLoading] = useState(() => {
-    if (typeof window === 'undefined') return true;
-
-    const navEntry = performance.getEntriesByType('navigation')[0];
-    const isReload = navEntry && navEntry.type === 'reload';
-    const hasLoaded = sessionStorage.getItem('hasLoaded');
-
-    // Eğer daha önce yüklendiyse ve sayfa yenilenmediyse (dil değişimi vs.) doğrudan kapalı başlat
-    if (hasLoaded && !isReload) {
-      return false;
-    }
-    return true;
-  });
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (!isLoading) return;
+    const hasLoaded = sessionStorage.getItem('hasLoaded');
+
+    if (hasLoaded) {
+      setIsLoading(false);
+      return;
+    }
 
     const timer = setTimeout(() => {
       setIsLoading(false);
@@ -27,7 +20,7 @@ export default function Preloader() {
     }, 1200);
 
     return () => clearTimeout(timer);
-  }, [isLoading]);
+  }, []);
 
   if (!isLoading) return null;
 

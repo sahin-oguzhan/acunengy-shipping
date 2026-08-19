@@ -1,9 +1,7 @@
 import { IBM_Plex_Sans, Space_Grotesk } from 'next/font/google';
 import '../globals.css';
-import { ThemeProvider } from '@/components/layout/ThemeProvider';
 import Navbar from '@/components/layout/Navbar';
 import Preloader from '@/components/ui/Preloader';
-import { getDictionary } from '@/dictionaries/getDictionary';
 import { getHomePageData } from '@/lib/api';
 
 const ibmPlex = IBM_Plex_Sans({
@@ -30,7 +28,8 @@ export async function generateMetadata({ params }) {
   const locale = resolvedParams?.locale || 'tr';
   const isTr = locale === 'tr';
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://acunengy.com';
+  const siteUrl =
+    process.env.NEXT_PUBLIC_SITE_URL || 'https://www.acunengy.com';
 
   const title = isTr
     ? 'Acunengy Shipping & Maritime Services | Küresel Denizcilik & Lojistik'
@@ -101,13 +100,17 @@ export async function generateMetadata({ params }) {
 
 export default async function RootLayout({ children, params }) {
   const resolvedParams = await params;
-  const locale = resolvedParams.locale;
+  const locale = resolvedParams?.locale || 'tr';
 
-  const dict = await getDictionary(locale);
-  const wpData = await getHomePageData(locale);
+  let wpData = {};
+  try {
+    wpData = (await getHomePageData(locale)) || {};
+  } catch (error) {
+    console.error('Layout Fetch Error:', error);
+  }
 
   return (
-    <html lang={locale} suppressHydrationWarning>
+    <html lang={locale} className="light" suppressHydrationWarning>
       <head>
         <link
           rel="stylesheet"
@@ -117,11 +120,9 @@ export default async function RootLayout({ children, params }) {
       <body
         className={`${ibmPlex.variable} ${spaceGrotesk.variable} font-sans antialiased min-h-screen flex flex-col`}
       >
-        <ThemeProvider>
-          <Preloader />
-          <Navbar dict={dict.navbar} wpData={wpData} />
-          {children}
-        </ThemeProvider>
+        <Preloader />
+        <Navbar wpData={wpData} />
+        {children}
       </body>
     </html>
   );

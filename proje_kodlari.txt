@@ -1,0 +1,3542 @@
+=== FILE: jsconfig.json ===
+{
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  }
+}
+
+
+
+=== FILE: package.json ===
+{
+  "name": "acunengy-shipping",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "@builder.io/react": "^9.4.1",
+    "@builder.io/sdk": "^6.3.1",
+    "@emailjs/browser": "^4.4.1",
+    "framer-motion": "^12.43.0",
+    "next": "^16.3.1",
+    "react": "19.2.4",
+    "react-dom": "19.2.4"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "babel-plugin-react-compiler": "1.0.0",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.12",
+    "tailwindcss": "^4"
+  }
+}
+
+
+
+=== FILE: src\app\globals.css ===
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=swap');
+@import 'tailwindcss';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-customBg: var(--bg-background);
+  --color-customSurface: var(--bg-surface);
+  --color-customCard: var(--bg-card);
+  --color-customText: var(--text-main);
+  --color-customMuted: var(--text-muted);
+  --color-customAccent: var(--accent);
+  --color-customAccentHover: var(--accent-hover);
+  --color-customBorder: var(--border-color);
+
+  --font-sans: var(--font-sans), system-ui, sans-serif;
+  --font-heading: var(--font-heading), system-ui, sans-serif;
+}
+
+@layer base {
+  :root {
+    /* Açık Mod - Steel Gray & Navy Accent */
+    --bg-background: #f4f6f9;
+    --bg-surface: #ffffff;
+    --bg-card: #e2e8f0;
+    --text-main: #0b2341;
+    --text-muted: #475569;
+
+    --accent: #0b2341; /* Primary Dark Navy */
+    --accent-hover: #163863;
+
+    --border-color: rgba(11, 35, 65, 0.12);
+  }
+
+  .dark {
+    /* Brief: Primary Color Dark Navy Blue (#0B2341) */
+    --bg-background: #061324;
+    --bg-surface: #0b2341;
+    --bg-card: #12325a;
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+
+    /* Subtle Turquoise / Steel Accent */
+    --accent: #38bdf8;
+    --accent-hover: #0284c7;
+
+    --border-color: rgba(255, 255, 255, 0.1);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-heading);
+    letter-spacing: -0.02em;
+  }
+}
+
+body {
+  background-color: var(--bg-background);
+  color: var(--text-main);
+  font-family: var(--font-sans);
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
+}
+
+@keyframes shipFloat {
+  0%,
+  100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-10px) rotate(0.8deg);
+  }
+}
+
+.animate-ship-float {
+  animation: shipFloat 5s ease-in-out infinite;
+}
+
+@keyframes infiniteScroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-33.333%);
+  }
+}
+
+.animate-infinite-scroll {
+  display: flex;
+  width: max-content;
+  animation: infiniteScroll 25s linear infinite;
+}
+
+@keyframes servicesScroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-33.333%);
+  }
+}
+
+.animate-services-scroll {
+  display: flex;
+  width: max-content;
+  animation: servicesScroll 40s linear infinite;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+
+
+=== FILE: src\app\robots.js ===
+export default function robots() {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
+
+  return {
+    rules: {
+      userAgent: '*',
+      allow: '/',
+      disallow: '/private/',
+    },
+    sitemap: `${siteUrl}/sitemap.xml`,
+  };
+}
+
+
+
+=== FILE: src\app\sitemap.js ===
+async function fetchNewsSlugs() {
+  const API_URL = process.env.NEXT_PUBLIC_WORDPRESS_API_URL;
+
+  const query = `
+    query GetSitemapPosts {
+      posts(first: 100) {
+        nodes {
+          slug
+          uri
+        }
+      }
+    }
+  `;
+
+  try {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query }),
+      next: { revalidate: 3600 },
+    });
+    const json = await res.json();
+    return json.data?.posts?.nodes || [];
+  } catch (error) {
+    console.error('Sitemap Fetch Error:', error);
+    return [];
+  }
+}
+
+export default async function sitemap() {
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://acunengy.com';
+
+  // Statik Sayfalar (TR ve EN)
+  const staticPages = ['', '/news', '/privacy', '/terms'];
+  const locales = ['tr', 'en'];
+
+  const staticUrls = [];
+
+  locales.forEach((locale) => {
+    staticPages.forEach((page) => {
+      staticUrls.push({
+        url: `${baseUrl}/${locale}${page}`,
+        lastModified: new Date(),
+        changeFrequency: page === '' ? 'daily' : 'weekly',
+        priority: page === '' ? 1.0 : 0.8,
+      });
+    });
+  });
+
+  // Dinamik Haber/Blog Sayfaları
+  const posts = await fetchNewsSlugs();
+  const newsUrls = posts.map((post) => {
+    const isEn = post.uri?.includes('/en/');
+    const locale = isEn ? 'en' : 'tr';
+
+    return {
+      url: `${baseUrl}/${locale}/${post.slug}`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.6,
+    };
+  });
+
+  return [...staticUrls, ...newsUrls];
+}
+
+
+
+=== FILE: src\app\[locale]\layout.js ===
+import { IBM_Plex_Sans, Space_Grotesk } from 'next/font/google';
+import '../globals.css';
+import Navbar from '@/components/layout/Navbar';
+import Preloader from '@/components/ui/Preloader';
+import { getHomePageData } from '@/lib/api';
+
+const ibmPlex = IBM_Plex_Sans({
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700'],
+  variable: '--font-sans',
+  display: 'swap',
+});
+
+const spaceGrotesk = Space_Grotesk({
+  subsets: ['latin'],
+  variable: '--font-heading',
+  display: 'swap',
+});
+
+export const viewport = {
+  themeColor: '#020617',
+  width: 'device-width',
+  initialScale: 1,
+};
+
+export async function generateMetadata({ params }) {
+  const resolvedParams = await params;
+  const locale = resolvedParams?.locale || 'tr';
+  const isTr = locale === 'tr';
+
+  const siteUrl =
+    process.env.NEXT_PUBLIC_SITE_URL || 'https://www.acunengy.com';
+
+  const title = isTr
+    ? 'Acunengy Shipping & Maritime Services | Küresel Denizcilik & Lojistik'
+    : 'Acunengy Shipping & Maritime Services | Global Maritime & Logistics';
+
+  const description = isTr
+    ? 'Uluslararası ticaret koridorlarında küresel denizcilik çözümleri, ağır yük mühendisliği ve tavizsiz liman acenteliği hizmetleri.'
+    : 'Global maritime solutions, heavy-lift engineering, and uncompromised port agency services across international trade corridors.';
+
+  return {
+    metadataBase: new URL(siteUrl),
+    title: {
+      default: title,
+      template: '%s | Acunengy Shipping',
+    },
+    description: description,
+    keywords: [
+      'Maritime Services',
+      'Ship Agency',
+      'Port Agency',
+      'Heavy Lift',
+      'Project Cargo',
+      'Denizcilik Hizmetleri',
+      'Liman Acenteliği',
+      'Gemi Acenteliği',
+      'Acunengy',
+    ],
+    authors: [{ name: 'Oğuzhan Şahin' }],
+    creator: 'Oğuzhan Şahin',
+
+    openGraph: {
+      title: title,
+      description: description,
+      url: `${siteUrl}/${locale}`,
+      siteName: 'Acunengy Shipping',
+      images: [
+        {
+          url: `${siteUrl}/images/logo.png`,
+          width: 1200,
+          height: 630,
+          alt: 'Acunengy Shipping & Maritime Services',
+        },
+      ],
+      locale: isTr ? 'tr_TR' : 'en_US',
+      type: 'website',
+    },
+
+    twitter: {
+      card: 'summary_large_image',
+      title: title,
+      description: description,
+      images: [`${siteUrl}/images/logo.png`],
+    },
+
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-video-preview': -1,
+        'max-image-preview': 'large',
+        'max-snippet': -1,
+      },
+    },
+  };
+}
+
+export default async function RootLayout({ children, params }) {
+  const resolvedParams = await params;
+  const locale = resolvedParams?.locale || 'tr';
+
+  let wpData = {};
+  try {
+    wpData = (await getHomePageData(locale)) || {};
+  } catch (error) {
+    console.error('Layout Fetch Error:', error);
+  }
+
+  return (
+    <html lang={locale} className="light" suppressHydrationWarning>
+      <head>
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=swap"
+        />
+      </head>
+      <body
+        className={`${ibmPlex.variable} ${spaceGrotesk.variable} font-sans antialiased min-h-screen flex flex-col`}
+      >
+        <Preloader />
+        <Navbar wpData={wpData} />
+        {children}
+      </body>
+    </html>
+  );
+}
+
+
+
+=== FILE: src\app\[locale]\news\page.js ===
+import React from 'react';
+import Link from 'next/link';
+import Footer from '@/components/layout/Footer';
+
+async function getAllPosts(locale) {
+  const API_URL =
+    process.env.NEXT_PUBLIC_WORDPRESS_API_URL ||
+    'https://dev-acunengy-demo.pantheonsite.io/graphql';
+
+  const langEnum = locale.toUpperCase();
+
+  const query = `
+    query GetAllPosts($language: LanguageCodeFilterEnum!) {
+      posts(where: { language: $language }, first: 100) {
+        nodes {
+          id
+          title
+          slug
+          uri
+          date
+          categories {
+            nodes {
+              name
+            }
+          }
+          featuredImage {
+            node {
+              sourceUrl
+            }
+          }
+        }
+      }
+    }
+  `;
+
+  try {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query, variables: { language: langEnum } }),
+      next: { revalidate: 10 },
+    });
+    const json = await res.json();
+    return json.data?.posts?.nodes || [];
+  } catch (error) {
+    console.error('Fetch All Posts Error:', error);
+    return [];
+  }
+}
+
+export default async function NewsArchivePage({ params }) {
+  const resolvedParams = await params;
+  const { locale } = resolvedParams;
+  const currentLang = locale.toLowerCase();
+
+  const rawPosts = await getAllPosts(locale);
+
+  // DİL FİLTRESİ: İngilizce sayfasında URI'sinde /en/ olanlar, Türkçe sayfasında ise olmayanlar filtrelenir.
+  const filteredPosts = rawPosts.filter((post) =>
+    currentLang === 'en'
+      ? post.uri?.includes('/en/')
+      : !post.uri?.includes('/en/'),
+  );
+
+  const posts = filteredPosts.map((post) => {
+    const formattedDate = post.date
+      ? new Date(post.date).toLocaleDateString(
+          currentLang === 'tr' ? 'tr-TR' : 'en-US',
+          { day: 'numeric', month: 'short', year: 'numeric' },
+        )
+      : '';
+
+    return {
+      id: post.id,
+      title: post.title,
+      slug: post.slug,
+      date: formattedDate,
+      category:
+        post.categories?.nodes[0]?.name ||
+        (currentLang === 'tr' ? 'HABERLER' : 'NEWS'),
+      image: post.featuredImage?.node?.sourceUrl || '',
+    };
+  });
+
+  return (
+    <main className="min-h-screen bg-customBg text-customText pt-36 pb-20 px-6 md:px-16 flex flex-col justify-between">
+      <div className="max-w-7xl mx-auto w-full mb-20">
+        {/* Ana Sayfa Bülten Bölümüne Yönlendiren Link */}
+        <Link
+          href={`/${locale}#news`}
+          className="inline-flex items-center gap-2 font-mono text-xs text-customAccent font-bold uppercase mb-8 hover:underline"
+        >
+          ← {currentLang === 'tr' ? 'Ana Sayfaya Dön' : 'Back to Home'}
+        </Link>
+
+        <h1 className="text-4xl md:text-6xl font-black font-heading tracking-tight mb-4">
+          {currentLang === 'tr'
+            ? 'Tüm Haberler & Analizler'
+            : 'All News & Insights'}
+        </h1>
+        <p className="text-customMuted text-base md:text-lg max-w-2xl mb-12">
+          {currentLang === 'tr'
+            ? 'Denizcilik, lojistik ve ağır nakliyat sektöründen en son gelişmeler.'
+            : 'Latest updates and industry insights from maritime, logistics, and heavy lift operations.'}
+        </p>
+
+        {posts.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {posts.map((post) => (
+              <Link
+                key={post.id}
+                href={`/${locale}/${post.slug}`}
+                className="relative h-[420px] rounded-3xl overflow-hidden border border-customBorder/80 bg-slate-950 shadow-2xl flex flex-col justify-between p-8 group cursor-pointer hover:border-customAccent/60 transition-all duration-300 hover:-translate-y-2 block"
+              >
+                {post.image && (
+                  <div
+                    className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110"
+                    style={{ backgroundImage: `url(${post.image})` }}
+                  />
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/30" />
+
+                <div className="relative z-20 flex items-center justify-between">
+                  <span className="font-mono text-xs text-white font-bold uppercase tracking-widest bg-black/70 px-4 py-1.5 rounded-full border border-white/20 backdrop-blur-md">
+                    {post.category}
+                  </span>
+                </div>
+
+                <div className="relative z-10 text-white">
+                  <span className="font-mono text-xs text-gray-300 block mb-2 font-semibold">
+                    {post.date}
+                  </span>
+                  <h3 className="text-xl font-black font-heading text-white leading-snug group-hover:text-[#38bdf8] transition-colors line-clamp-3">
+                    {post.title}
+                  </h3>
+                </div>
+              </Link>
+            ))}
+          </div>
+        ) : (
+          <div className="py-20 text-center text-customMuted font-mono">
+            {currentLang === 'tr'
+              ? 'Bu dilde henüz haber bulunmuyor.'
+              : 'No posts found in this language.'}
+          </div>
+        )}
+      </div>
+
+      <Footer locale={locale} />
+    </main>
+  );
+}
+
+
+
+=== FILE: src\app\[locale]\page.js ===
+import Hero from '@/components/home/Hero';
+import About from '@/components/home/About';
+import Stats from '@/components/home/Stats';
+import Services from '@/components/home/Services';
+import Specializations from '@/components/home/Specializations';
+import Industries from '@/components/home/Industries';
+import News from '@/components/home/News';
+import Contact from '@/components/home/Contact';
+import EmergencyWidget from '@/components/layout/EmergencyWidget';
+import Footer from '@/components/layout/Footer';
+import { getHomePageData } from '@/lib/api';
+import Approach from '@/components/home/Approach';
+
+export default async function Home({ params }) {
+  const resolvedParams = await params;
+  const locale = resolvedParams?.locale || 'tr';
+
+  const wpData = await getHomePageData(locale);
+
+  return (
+    <main className="flex flex-col w-full">
+      <section id="hero">
+        <Hero locale={locale} wpData={wpData} />
+      </section>
+
+      <section id="about">
+        <About locale={locale} wpData={wpData} />
+      </section>
+
+      <Stats locale={locale} wpData={wpData} />
+
+      <section id="services">
+        <Services locale={locale} wpData={wpData} />
+      </section>
+
+      <Specializations locale={locale} wpData={wpData} />
+
+      <Industries locale={locale} wpData={wpData} />
+
+      <section id="approach">
+        <Approach locale={locale} wpData={wpData} />
+      </section>
+
+      <section id="news">
+        <News locale={locale} wpData={wpData} />
+      </section>
+
+      <section id="contact">
+        <Contact wpData={wpData} locale={locale} />
+      </section>
+
+      <EmergencyWidget wpData={wpData} />
+      <Footer wpData={wpData} locale={locale} />
+    </main>
+  );
+}
+
+
+
+=== FILE: src\app\[locale]\privacy\page.js ===
+import React from 'react';
+import Link from 'next/link';
+import Footer from '@/components/layout/Footer';
+
+export default async function PrivacyPage({ params }) {
+  const resolvedParams = await params;
+  const { locale } = resolvedParams;
+  const isTr = locale === 'tr';
+
+  return (
+    <main className="min-h-screen bg-customBg text-customText pt-36 pb-20 px-6 md:px-16 flex flex-col justify-between">
+      <div className="max-w-4xl mx-auto w-full mb-20">
+        <Link
+          href={`/${locale}`}
+          className="inline-flex items-center gap-2 font-mono text-xs text-customAccent font-bold uppercase mb-8 hover:underline"
+        >
+          ← {isTr ? 'Ana Sayfaya Dön' : 'Back to Home'}
+        </Link>
+
+        <h1 className="text-3xl md:text-5xl font-black font-heading tracking-tight mb-8">
+          {isTr ? 'Gizlilik Politikası' : 'Privacy Policy'}
+        </h1>
+
+        <div className="space-y-6 text-customMuted text-sm md:text-base leading-relaxed">
+          <p>
+            {isTr
+              ? 'Acunengy Shipping & Maritime Services olarak kişisel verilerinizin güvenliğine önem veriyoruz. Bu gizlilik politikası, web sitemiz üzerinden toplanan bilgilerin nasıl kullanıldığını ve korunduğunu açıklar.'
+              : 'At Acunengy Shipping & Maritime Services, we commit to protecting your personal data. This privacy policy explains how we process and safeguard information collected through our website.'}
+          </p>
+
+          <h2 className="text-xl font-bold text-customText pt-4">
+            {isTr ? '1. Toplanan Veriler' : '1. Information We Collect'}
+          </h2>
+          <p>
+            {isTr
+              ? 'İletişim formları aracılığıyla paylaştığınız ad, soyad, e-posta adresi ve mesaj detayları gibi veriler yalnızca taleplerinize yanıt vermek amacıyla işlenir.'
+              : 'Personal details such as name, email address, and inquiry messages submitted via our contact forms are processed solely to respond to your service inquiries.'}
+          </p>
+
+          <h2 className="text-xl font-bold text-customText pt-4">
+            {isTr ? '2. Veri Güvenliği' : '2. Data Protection & Security'}
+          </h2>
+          <p>
+            {isTr
+              ? 'Verileriniz yetkisiz erişimlere ve üçüncü şahıslarla paylaşılmaya karşı endüstri standardı güvenlik önlemleri ile korunmaktadır.'
+              : 'We implement industry-standard technical and organizational security measures to prevent unauthorized access or disclosure of your data.'}
+          </p>
+
+          <h2 className="text-xl font-bold text-customText pt-4">
+            {isTr ? '3. İletişim' : '3. Contact Us'}
+          </h2>
+          <p>
+            {isTr
+              ? 'Gizlilik politikamızla ilgili tüm sorularınız için resmi e-posta adresimiz üzerinden bizimle iletişime geçebilirsiniz.'
+              : 'For any inquiries regarding our privacy policy, please reach out through our official communications email.'}
+          </p>
+        </div>
+      </div>
+
+      <Footer locale={locale} />
+    </main>
+  );
+}
+
+
+
+=== FILE: src\app\[locale]\terms\page.js ===
+import React from 'react';
+import Link from 'next/link';
+import Footer from '@/components/layout/Footer';
+
+export default async function TermsPage({ params }) {
+  const resolvedParams = await params;
+  const { locale } = resolvedParams;
+  const isTr = locale === 'tr';
+
+  return (
+    <main className="min-h-screen bg-customBg text-customText pt-36 pb-20 px-6 md:px-16 flex flex-col justify-between">
+      <div className="max-w-4xl mx-auto w-full mb-20">
+        <Link
+          href={`/${locale}`}
+          className="inline-flex items-center gap-2 font-mono text-xs text-customAccent font-bold uppercase mb-8 hover:underline"
+        >
+          ← {isTr ? 'Ana Sayfaya Dön' : 'Back to Home'}
+        </Link>
+
+        <h1 className="text-3xl md:text-5xl font-black font-heading tracking-tight mb-8">
+          {isTr ? 'Kullanım Şartları' : 'Terms of Service'}
+        </h1>
+
+        <div className="space-y-6 text-customMuted text-sm md:text-base leading-relaxed">
+          <p>
+            {isTr
+              ? 'Bu web sitesini kullanarak aşağıda belirtilen şartları kabul etmiş sayılırsınız.'
+              : 'By accessing and using this website, you agree to comply with the following terms of service.'}
+          </p>
+
+          <h2 className="text-xl font-bold text-customText pt-4">
+            {isTr ? '1. Fikri Mülkiyet' : '1. Intellectual Property'}
+          </h2>
+          <p>
+            {isTr
+              ? 'Bu sitede yer alan tüm içerik, amblem, görsel ve yazılı materyaller Acunengy Shipping & Maritime Services mülkiyetindedir.'
+              : 'All materials, text, branding, and content displayed on this website are the intellectual property of Acunengy Shipping & Maritime Services.'}
+          </p>
+
+          <h2 className="text-xl font-bold text-customText pt-4">
+            {isTr ? '2. Hizmet Şartları' : '2. Service Information'}
+          </h2>
+          <p>
+            {isTr
+              ? 'Sitede sunulan bilgiler bilgilendirme amaçlıdır. Bağlayıcı navlun teklifleri ve operasyonel şartlar yazılı sözleşmelerle belirlenir.'
+              : 'Information provided on this site is for general communication. Binding operational commitments and freight quotations are executed via formal written agreements.'}
+          </p>
+        </div>
+      </div>
+
+      <Footer locale={locale} />
+    </main>
+  );
+}
+
+
+
+=== FILE: src\app\[locale]\[slug]\page.js ===
+import { notFound } from 'next/navigation';
+import Link from 'next/link';
+import Image from 'next/image';
+import Footer from '@/components/layout/Footer';
+
+async function getPostData(slug) {
+  const API_URL = process.env.NEXT_PUBLIC_WORDPRESS_API_URL;
+
+  const query = `
+    query GetPostBySlug($id: ID!) {
+      post(id: $id, idType: SLUG) {
+        id
+        title
+        date
+        content
+        featuredImage {
+          node {
+            sourceUrl
+          }
+        }
+        categories {
+          nodes {
+            name
+          }
+        }
+      }
+    }
+  `;
+
+  try {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query, variables: { id: slug } }),
+      next: { revalidate: 10 },
+    });
+    const json = await res.json();
+    return json.data?.post || null;
+  } catch (error) {
+    console.error('Fetch Post Error:', error);
+    return null;
+  }
+}
+
+export default async function PostDetailPage({ params }) {
+  const resolvedParams = await params;
+  const { slug, locale } = resolvedParams;
+
+  const post = await getPostData(slug);
+
+  if (!post) {
+    notFound();
+  }
+
+  const categoryName =
+    post.categories?.nodes[0]?.name || (locale === 'tr' ? 'HABERLER' : 'NEWS');
+  const formattedDate = new Date(post.date).toLocaleDateString(
+    locale === 'tr' ? 'tr-TR' : 'en-US',
+    { day: 'numeric', month: 'long', year: 'numeric' },
+  );
+
+  return (
+    <main className="min-h-screen bg-customBg text-customText pt-36 pb-20 px-6 md:px-12 flex flex-col justify-between">
+      <div className="max-w-4xl mx-auto w-full mb-20">
+        <Link
+          href={`/${locale}#news`}
+          className="inline-flex items-center gap-2 font-mono text-xs text-customAccent font-bold uppercase mb-8 hover:underline"
+        >
+          ← {locale === 'tr' ? 'Ana Sayfaya Dön' : 'Back to Home'}
+        </Link>
+
+        <div className="flex items-center gap-4 mb-4">
+          <span className="font-mono text-xs text-customAccent font-bold uppercase px-3.5 py-1.5 bg-customAccent/10 rounded-full border border-customAccent/20">
+            {categoryName}
+          </span>
+          <span className="font-mono text-xs text-customMuted font-semibold">
+            {formattedDate}
+          </span>
+        </div>
+
+        <h1 className="text-3xl md:text-5xl font-black font-heading tracking-tight mb-8 leading-tight">
+          {post.title}
+        </h1>
+
+        {post.featuredImage?.node?.sourceUrl && (
+          <div className="relative w-full h-[360px] md:h-[520px] rounded-3xl overflow-hidden mb-12 border border-customBorder/80 shadow-2xl">
+            <Image
+              src={post.featuredImage.node.sourceUrl}
+              alt={post.title}
+              fill
+              priority
+              sizes="(max-width: 768px) 100vw, 896px"
+              className="object-cover"
+            />
+          </div>
+        )}
+
+        <div
+          className="prose dark:prose-invert max-w-none text-customText/90 leading-relaxed text-base md:text-lg space-y-4"
+          dangerouslySetInnerHTML={{ __html: post.content }}
+        />
+      </div>
+
+      <Footer locale={locale} />
+    </main>
+  );
+}
+
+
+
+=== FILE: src\components\home\About.jsx ===
+'use client';
+
+import React from 'react';
+
+export default function About({ wpData }) {
+  // 1. WordPress ACF About Grubu Verileri
+  const aboutData = wpData?.pageFields?.aboutGroup;
+
+  const displayBadge = aboutData?.badge || '';
+  const rawTitle = aboutData?.title || '';
+  const displayDesc = aboutData?.description || '';
+
+  const card1Title = aboutData?.card1Title || '';
+  const card1Desc = aboutData?.card1Desc || '';
+  const card2Title = aboutData?.card2Title || '';
+  const card2Desc = aboutData?.card2Desc || '';
+
+  const metric1Value = aboutData?.metric1Value || '';
+  const metric1Label = aboutData?.metric1Label || '';
+  const metric2Value = aboutData?.metric2Value || '';
+  const metric2Label = aboutData?.metric2Label || '';
+
+  // Başlığı '&' karakterine göre 2 satıra/renge bölme mantığı
+  const titleWords =
+    typeof rawTitle === 'string' && rawTitle ? rawTitle.split('&') : [rawTitle];
+  const displayTitle1 = titleWords[0] ? titleWords[0].trim() : rawTitle;
+  const displayTitle2 = titleWords[1] ? `& ${titleWords[1].trim()}` : '';
+
+  // Veri tamamen boşsa bileşeni ekranda gizle
+  if (!displayTitle1 && !displayBadge && !displayDesc) {
+    return null;
+  }
+
+  return (
+    <section className="py-28 px-6 md:px-16 bg-customSurface/50 relative overflow-hidden">
+      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+        {/* Sol Taraf: Yazılar ve Modern Özellik Kartları */}
+        <div>
+          {displayBadge && (
+            <span className="inline-block font-mono text-xs text-customAccent tracking-widest uppercase mb-4 px-3.5 py-1.5 rounded-full bg-customAccent/10 border border-customAccent/20 font-semibold">
+              {displayBadge}
+            </span>
+          )}
+
+          {displayTitle1 && (
+            <h2 className="text-3xl md:text-5xl text-customText font-black mb-6 leading-tight tracking-tight font-heading">
+              {displayTitle1} <br />
+              {displayTitle2 && (
+                <span className="text-customAccent">{displayTitle2}</span>
+              )}
+            </h2>
+          )}
+
+          {displayDesc && (
+            <div className="space-y-4 text-customMuted text-base md:text-lg mb-10 leading-relaxed font-normal whitespace-pre-line">
+              <p>{displayDesc}</p>
+            </div>
+          )}
+
+          {/* 24/7 & Global Kartları */}
+          {(card1Title || card2Title) && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10">
+              {card1Title && (
+                <div className="p-5 rounded-2xl border border-customBorder/80 bg-customBg/60 backdrop-blur-xl flex items-start gap-4 shadow-sm hover:border-customAccent/40 transition-all duration-300">
+                  <div className="p-2.5 bg-customAccent/10 text-customAccent rounded-xl shrink-0">
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-mono font-bold text-customText uppercase tracking-wider">
+                      {card1Title}
+                    </h4>
+                    {card1Desc && (
+                      <p className="text-xs text-customMuted mt-1 leading-relaxed">
+                        {card1Desc}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {card2Title && (
+                <div className="p-5 rounded-2xl border border-customBorder/80 bg-customBg/60 backdrop-blur-xl flex items-start gap-4 shadow-sm hover:border-customAccent/40 transition-all duration-300">
+                  <div className="p-2.5 bg-customAccent/10 text-customAccent rounded-xl shrink-0">
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 002 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 002 2h1.5a2.5 2.5 0 002.5-2.5V11.372m-2.5 0a2.5 2.5 0 00-2.5-2.5H14a2 2 0 01-2-2V4.372"
+                      />
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-mono font-bold text-customText uppercase tracking-wider">
+                      {card2Title}
+                    </h4>
+                    {card2Desc && (
+                      <p className="text-xs text-customMuted mt-1 leading-relaxed">
+                        {card2Desc}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Alt Metrikler */}
+          {(metric1Value || metric2Value) && (
+            <div className="grid grid-cols-2 gap-8 border-t border-customBorder/80 pt-6">
+              {metric1Value && (
+                <div>
+                  <span className="font-mono text-customAccent text-4xl font-black tracking-tight">
+                    {metric1Value}
+                  </span>
+                  {metric1Label && (
+                    <p className="font-mono text-xs text-customMuted mt-1 uppercase font-semibold tracking-wider">
+                      {metric1Label}
+                    </p>
+                  )}
+                </div>
+              )}
+              {metric2Value && (
+                <div>
+                  <span className="font-mono text-customAccent text-4xl font-black tracking-tight">
+                    {metric2Value}
+                  </span>
+                  {metric2Label && (
+                    <p className="font-mono text-xs text-customMuted mt-1 uppercase font-semibold tracking-wider">
+                      {metric2Label}
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Sağ Taraf: Canlı AIS Haritası */}
+        <div className="relative h-[480px] lg:h-[540px] bg-customCard rounded-3xl overflow-hidden border border-customBorder shadow-2xl group">
+          <div className="absolute top-5 left-5 z-20 bg-customBg/90 backdrop-blur-md border border-customBorder px-4 py-2 rounded-xl flex items-center gap-2.5 shadow-xl pointer-events-none">
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-600"></span>
+            </span>
+            <span className="font-mono text-xs uppercase tracking-widest text-customText font-bold">
+              LIVE AIS TRAFFIC
+            </span>
+          </div>
+
+          <iframe
+            name="vesselfinder"
+            id="vesselfinder"
+            width="100%"
+            height="100%"
+            frameBorder="0"
+            title="Live Vessel Tracking"
+            className="absolute inset-0 z-10 filter contrast-110"
+            src="https://www.vesselfinder.com/aismap?zoom=6&lat=38.42&lon=27.14&width=100%25&height=100%25&names=false&track=true&fleet=false&fleet_name=false&fleet_hide_old_positions=false&clicktoact=false&default_maptype=1&cursor=hidden"
+          ></iframe>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+
+
+=== FILE: src\components\home\Approach.jsx ===
+'use client';
+
+import React from 'react';
+import FadeIn from '@/components/ui/FadeIn';
+
+export default function Approach({ wpData }) {
+  const approachData = wpData?.pageFields?.approachGroup;
+
+  const displayBadge = approachData?.badge;
+  const displayTitle = approachData?.title;
+  const displayDesc = approachData?.description;
+
+  const rawItems = [
+    {
+      title: approachData?.item1Title,
+      desc: approachData?.item1Desc,
+    },
+    {
+      title: approachData?.item2Title,
+      desc: approachData?.item2Desc,
+    },
+    {
+      title: approachData?.item3Title,
+      desc: approachData?.item3Desc,
+    },
+  ];
+
+  const items = rawItems.filter(
+    (item) =>
+      item.title &&
+      item.title.trim() !== '' &&
+      item.desc &&
+      item.desc.trim() !== '',
+  );
+
+  if (!displayTitle && !displayBadge && items.length === 0) {
+    return null;
+  }
+
+  return (
+    <section
+      id="approach"
+      className="py-24 md:py-28 bg-customBg relative overflow-hidden border-t border-customBorder/60"
+    >
+      <div className="max-w-[1400px] w-full mx-auto px-6 md:px-12 relative z-10">
+        <FadeIn direction="up">
+          <div className="text-center max-w-3xl mx-auto mb-16 md:mb-20">
+            {displayBadge && (
+              <span className="inline-block font-mono text-xs md:text-sm text-customAccent tracking-widest uppercase mb-4 px-3.5 py-1.5 rounded-full bg-customAccent/10 border border-customAccent/20 font-semibold">
+                {displayBadge}
+              </span>
+            )}
+            {displayTitle && (
+              <h2 className="text-3xl md:text-5xl text-customText font-black mb-6 font-heading tracking-tight">
+                {displayTitle}
+              </h2>
+            )}
+            {displayDesc && (
+              <p className="text-customMuted text-base md:text-lg leading-relaxed font-normal">
+                {displayDesc}
+              </p>
+            )}
+          </div>
+        </FadeIn>
+
+        {items.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            {items.map((item, index) => (
+              <FadeIn
+                key={index}
+                delay={index * 0.15}
+                direction="up"
+                className="h-full"
+              >
+                <div className="h-full bg-customSurface/50 backdrop-blur-xl p-8 md:p-10 border border-customBorder/80 hover:border-customAccent/50 transition-all duration-300 group rounded-3xl flex flex-col items-start shadow-lg hover:shadow-2xl hover:shadow-customAccent/5">
+                  <h3 className="text-xl font-bold font-heading text-customText mb-3 tracking-tight group-hover:text-customAccent transition-colors">
+                    {item.title}
+                  </h3>
+                  <p className="text-customMuted text-sm md:text-base leading-relaxed font-normal">
+                    {item.desc}
+                  </p>
+                </div>
+              </FadeIn>
+            ))}
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+
+
+=== FILE: src\components\home\Contact.jsx ===
+'use client';
+
+import React, { useState, useRef } from 'react';
+import emailjs from '@emailjs/browser';
+import FadeIn from '@/components/ui/FadeIn';
+
+export default function Contact({ wpData, locale = 'tr' }) {
+  const formRef = useRef();
+  const isTr = locale.toLowerCase() === 'tr';
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState(null);
+
+  const [formData, setFormData] = useState({
+    user_name: '',
+    user_email: '',
+    user_service: '',
+    message: '',
+  });
+
+  const contactData = wpData?.pageFields?.contactGroup;
+
+  const displayBadge = contactData?.badge;
+  const displayTitle = contactData?.title;
+  const displayDesc = contactData?.description;
+  const displayPhone = contactData?.phone;
+  const displayEmail = contactData?.email;
+  const displayAddress = contactData?.address;
+  const whatsappUrl = contactData?.whatsapp;
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const sendEmail = (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    emailjs
+      .sendForm(
+        process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID,
+        process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID,
+        formRef.current,
+        process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY,
+      )
+      .then(
+        () => {
+          setSubmitStatus('success');
+          setIsSubmitting(false);
+          setFormData({
+            user_name: '',
+            user_email: '',
+            user_service: '',
+            message: '',
+          });
+
+          setTimeout(() => setSubmitStatus(null), 4000);
+        },
+        (error) => {
+          setSubmitStatus('error');
+          setIsSubmitting(false);
+          console.error('EmailJS Error:', error.text);
+        },
+      );
+  };
+
+  return (
+    <section className="relative py-28 px-6 md:px-16 overflow-hidden bg-customBg border-t border-customBorder/80 transition-colors duration-300">
+      <div className="absolute inset-0 opacity-10 pointer-events-none">
+        <div
+          className="w-full h-full bg-cover bg-center"
+          style={{
+            backgroundImage:
+              "url('https://lh3.googleusercontent.com/aida-public/AB6AXuBONveGnvoRVEMwiZMsLDSl_IsHYJgsTx83HYglPA899m0IDbC0k-Sglu8GweCxD7Y7U4bNCM8URNOgzpHZanpv06uRJzX8vLI0KPH1i9iWYZ-JbCyQ2MCpu7e7GejNaUuYmofqKqGnPrOv0BDOlj4UBIDfVCCJFgzNuMnZZe7lEc_sKYlRk-KTWl04H2eaBMyerSQyL3yzt-1XC7gn9LN7r5XHdBcJwyEbFf1z_jSK8ZxyC56L9ylC')",
+          }}
+        />
+      </div>
+
+      <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-20 max-w-7xl mx-auto items-center">
+        <FadeIn direction="up">
+          <div>
+            {displayBadge && (
+              <span className="inline-block font-mono text-xs md:text-sm text-customAccent tracking-widest uppercase mb-4 px-3.5 py-1.5 rounded-full bg-customAccent/10 border border-customAccent/20 font-semibold">
+                {displayBadge}
+              </span>
+            )}
+            {displayTitle && (
+              <h2 className="text-3xl md:text-5xl text-customText font-black mb-6 font-heading tracking-tight">
+                {displayTitle}
+              </h2>
+            )}
+            {displayDesc && (
+              <p className="text-customMuted text-base md:text-lg mb-12 leading-relaxed font-normal">
+                {displayDesc}
+              </p>
+            )}
+
+            <div className="space-y-8">
+              {displayPhone && (
+                <div className="flex gap-6 items-start group">
+                  <div className="p-3.5 bg-customSurface/80 border border-customBorder rounded-2xl group-hover:border-customAccent/40 group-hover:bg-customAccent/15 transition-all shadow-sm">
+                    <span className="material-symbols-outlined text-customAccent text-2xl block">
+                      emergency
+                    </span>
+                  </div>
+                  <div>
+                    <h3 className="font-mono text-xs text-customMuted uppercase font-bold tracking-wider">
+                      {isTr ? 'ACİL OPERASYON MASASI' : 'EMERGENCY DESK'}
+                    </h3>
+                    <p className="text-customText text-lg md:text-xl font-bold font-mono mt-1 tracking-tight">
+                      {displayPhone}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {displayEmail && (
+                <div className="flex gap-6 items-start group">
+                  <div className="p-3.5 bg-customSurface/80 border border-customBorder rounded-2xl group-hover:border-customAccent/40 group-hover:bg-customAccent/15 transition-all shadow-sm">
+                    <span className="material-symbols-outlined text-customAccent text-2xl block">
+                      mail
+                    </span>
+                  </div>
+                  <div>
+                    <h3 className="font-mono text-xs text-customMuted uppercase font-bold tracking-wider">
+                      {isTr ? 'GENEL BİLGİ & TALEPLER' : 'GENERAL INQUIRIES'}
+                    </h3>
+                    <p className="text-customText text-lg md:text-xl font-bold font-mono mt-1 tracking-tight">
+                      {displayEmail}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {displayAddress && (
+                <div className="flex gap-6 items-start group">
+                  <div className="p-3.5 bg-customSurface/80 border border-customBorder rounded-2xl group-hover:border-customAccent/40 group-hover:bg-customAccent/15 transition-all shadow-sm">
+                    <span className="material-symbols-outlined text-customAccent text-2xl block">
+                      location_on
+                    </span>
+                  </div>
+                  <div>
+                    <h3 className="font-mono text-xs text-customMuted uppercase font-bold tracking-wider">
+                      {isTr ? 'MERKEZ OFİS' : 'HEADQUARTERS'}
+                    </h3>
+                    <p className="text-customText text-sm md:text-base font-medium mt-1 leading-relaxed">
+                      {displayAddress}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {whatsappUrl && (
+                <div className="pt-4">
+                  <a
+                    href={whatsappUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Contact via WhatsApp"
+                    className="inline-flex items-center gap-3 bg-[#25D366] text-white px-8 py-4 font-mono text-xs uppercase tracking-widest hover:opacity-90 transition-all font-extrabold rounded-2xl shadow-lg hover:shadow-xl"
+                  >
+                    <span className="material-symbols-outlined text-lg">
+                      chat
+                    </span>
+                    {isTr ? 'WHATSAPP İLE İLETİŞİME GEÇİN' : 'WHATSAPP DESK'}
+                  </a>
+                </div>
+              )}
+            </div>
+          </div>
+        </FadeIn>
+
+        <FadeIn direction="up">
+          <div className="bg-customSurface/60 backdrop-blur-xl p-8 md:p-12 border border-customBorder/80 rounded-3xl shadow-2xl relative z-10">
+            <form ref={formRef} onSubmit={sendEmail} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="font-mono text-xs text-customMuted uppercase font-bold tracking-wider block">
+                    {isTr ? 'Ad Soyad' : 'Full Name'}
+                  </label>
+                  <input
+                    type="text"
+                    name="user_name"
+                    required
+                    value={formData.user_name}
+                    onChange={handleChange}
+                    placeholder={isTr ? 'Ahmet Yılmaz' : 'John Doe'}
+                    className="w-full bg-customBg/80 border border-customBorder/80 rounded-2xl text-customText p-4 focus:border-customAccent focus:outline-none transition-colors text-sm font-medium shadow-sm"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="font-mono text-xs text-customMuted uppercase font-bold tracking-wider block">
+                    {isTr ? 'E-posta Adresi' : 'Email Address'}
+                  </label>
+                  <input
+                    type="email"
+                    name="user_email"
+                    required
+                    value={formData.user_email}
+                    onChange={handleChange}
+                    placeholder="name@company.com"
+                    className="w-full bg-customBg/80 border border-customBorder/80 rounded-2xl text-customText p-4 focus:border-customAccent focus:outline-none transition-colors text-sm font-medium shadow-sm"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label
+                  htmlFor="user_service_select"
+                  className="font-mono text-xs text-customMuted uppercase font-bold tracking-wider block"
+                >
+                  {isTr ? 'Hizmet Seçiniz' : 'Select Service'}
+                </label>
+
+                <select
+                  id="user_service_select"
+                  name="user_service"
+                  required
+                  value={formData.user_service}
+                  onChange={handleChange}
+                  className="w-full bg-customBg/80 border border-customBorder/80 rounded-2xl text-customText p-4 focus:border-customAccent focus:outline-none transition-colors text-sm font-medium shadow-sm"
+                >
+                  <option value="">
+                    {isTr ? 'Bir Hizmet Seçiniz...' : 'Select a Service...'}
+                  </option>
+                  <option value={isTr ? 'Gemi Acenteliği' : 'Ship Agency'}>
+                    {isTr ? 'Gemi Acenteliği' : 'Ship Agency'}
+                  </option>
+                  <option
+                    value={
+                      isTr
+                        ? 'Proje Kargo Koordinasyonu'
+                        : 'Project Cargo Coordination'
+                    }
+                  >
+                    {isTr
+                      ? 'Proje Kargo Koordinasyonu'
+                      : 'Project Cargo Coordination'}
+                  </option>
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <label className="font-mono text-xs text-customMuted uppercase font-bold tracking-wider block">
+                  {isTr ? 'Mesaj & Detaylar' : 'Message & Specifications'}
+                </label>
+                <textarea
+                  name="message"
+                  required
+                  value={formData.message}
+                  onChange={handleChange}
+                  placeholder={
+                    isTr
+                      ? 'Kargo detayları, liman bilgisi veya tarih aralığı giriniz...'
+                      : 'Provide cargo details, port of call, or timeline...'
+                  }
+                  className="w-full bg-customBg/80 border border-customBorder/80 rounded-2xl text-customText p-4 focus:border-customAccent focus:outline-none transition-colors resize-none text-sm font-medium shadow-sm"
+                  rows="4"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className={`w-full py-4 font-mono text-xs uppercase tracking-widest transition-all font-extrabold rounded-2xl flex justify-center items-center gap-2 shadow-lg cursor-pointer ${
+                  isSubmitting
+                    ? 'bg-customMuted text-white cursor-not-allowed'
+                    : 'bg-customAccent text-white hover:opacity-90 shadow-[0_0_20px_rgba(56,189,248,0.3)]'
+                }`}
+              >
+                {isSubmitting
+                  ? isTr
+                    ? 'GÖNDERİLİYOR...'
+                    : 'TRANSMITTING...'
+                  : isTr
+                    ? 'TALEP GÖNDER'
+                    : 'SEND INQUIRY'}
+              </button>
+
+              {submitStatus === 'success' && (
+                <p className="text-emerald-400 font-mono text-xs font-bold text-center mt-4 bg-emerald-500/10 border border-emerald-500/30 py-3 rounded-xl">
+                  {isTr
+                    ? 'Talebiniz başarıyla iletildi. En kısa sürede sizinle iletişime geçeceğiz.'
+                    : 'Inquiry successfully transmitted. Our desk will contact you shortly.'}
+                </p>
+              )}
+              {submitStatus === 'error' && (
+                <p className="text-rose-400 font-mono text-xs font-bold text-center mt-4 bg-rose-500/10 border border-rose-500/30 py-3 rounded-xl">
+                  {isTr
+                    ? 'Gönderim başarısız oldu. Lütfen tekrar deneyin veya doğrudan e-posta atın.'
+                    : 'Transmission failed. Please try again or use direct email.'}
+                </p>
+              )}
+            </form>
+          </div>
+        </FadeIn>
+      </div>
+    </section>
+  );
+}
+
+
+
+=== FILE: src\components\home\Hero.jsx ===
+'use client';
+
+import React from 'react';
+import { usePathname } from 'next/navigation';
+import FadeIn from '@/components/ui/FadeIn';
+import HeroQuoteButton from '@/components/ui/HeroQuoteButton';
+
+export default function Hero({ wpData, locale }) {
+  const pathname = usePathname();
+  const currentLocale = pathname?.startsWith('/en') ? 'en' : 'tr';
+
+  // 1. Önce heroData tanımlanmalı
+  const heroData = wpData?.pageFields?.heroGroup;
+
+  // 2. Ardından heroData kullanılarak videoSrc tanımlanmalı
+  const videoSrc =
+    heroData?.heroVideoUrl || wpData?.videoUrl || '/videos/hero-video.mp4';
+
+  const displayBadge = heroData?.heroBadge || '';
+  const rawTitle = heroData?.heroTitle || '';
+  const displaySubtitle = heroData?.heroSubtitle || '';
+  const displayBtnQuote = heroData?.heroBtnText || '';
+
+  const displayBtnServices =
+    heroData?.heroBtnServicesText ||
+    (currentLocale === 'tr' ? 'HİZMETLERİMİZ' : 'OUR SERVICES');
+
+  const titleWords =
+    typeof rawTitle === 'string' && rawTitle ? rawTitle.split('&') : [rawTitle];
+  const displayTitle1 = titleWords[0] ? titleWords[0].trim() : rawTitle;
+  const displayTitle2 = titleWords[1] ? `& ${titleWords[1].trim()}` : '';
+
+  const scrollToServices = (e) => {
+    e.preventDefault();
+    const target = document.getElementById('services');
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  return (
+    <header
+      id="hero"
+      className="relative h-screen min-h-[750px] w-full flex items-center overflow-hidden bg-slate-950"
+    >
+      <div className="absolute inset-0 z-0 overflow-hidden">
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="none"
+          className="w-full h-full object-cover object-center scale-105"
+        >
+          <source src={videoSrc} type="video/mp4" />
+        </video>
+
+        <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent z-10 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/30 z-10 pointer-events-none" />
+      </div>
+
+      <div className="relative z-20 max-w-7xl w-full mx-auto px-6 md:px-16 pt-20 flex flex-col items-start">
+        <div className="max-w-2xl flex flex-col items-start text-left">
+          {displayBadge && (
+            <FadeIn direction="up" delay={0.1}>
+              <span className="inline-block font-mono text-xs md:text-sm text-[#38bdf8] tracking-widest uppercase mb-4 px-3.5 py-1.5 rounded-full bg-[#38bdf8]/10 border border-[#38bdf8]/30 font-semibold backdrop-blur-md">
+                {displayBadge}
+              </span>
+            </FadeIn>
+          )}
+
+          {displayTitle1 && (
+            <FadeIn direction="up" delay={0.2}>
+              <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black text-white tracking-tight leading-[1.08] mb-6 drop-shadow-[0_4px_20px_rgba(0,0,0,0.9)] font-heading">
+                {displayTitle1} <br />
+                {displayTitle2 && (
+                  <span className="text-[#67e8f9] drop-shadow-[0_0_25px_rgba(34,211,238,0.7)]">
+                    {displayTitle2}
+                  </span>
+                )}
+              </h1>
+            </FadeIn>
+          )}
+
+          {displaySubtitle && (
+            <FadeIn direction="up" delay={0.3}>
+              <p className="text-base md:text-xl text-slate-100 font-normal max-w-xl mb-10 leading-relaxed drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]">
+                {displaySubtitle}
+              </p>
+            </FadeIn>
+          )}
+
+          <FadeIn direction="up" delay={0.4}>
+            <div className="flex flex-wrap items-center gap-4">
+              {displayBtnQuote && (
+                <div className="[&_button]:!bg-customAccent [&_button]:!text-white [&_button]:!rounded-full [&_button]:!px-9 [&_button]:!py-4 [&_button]:!font-bold [&_button]:!text-sm [&_button]:!shadow-[0_0_30px_rgba(56,189,248,0.4)] hover:[&_button]:!brightness-110 transition-all">
+                  <HeroQuoteButton label={displayBtnQuote} locale={locale} />
+                </div>
+              )}
+
+              <button
+                type="button"
+                onClick={scrollToServices}
+                className="border-2 border-white/40 bg-black/50 text-white px-8 py-3.5 rounded-full font-mono text-xs uppercase tracking-widest hover:bg-white/30 active:scale-95 transition-all font-bold backdrop-blur-md shadow-2xl cursor-pointer inline-flex items-center justify-center"
+              >
+                {displayBtnServices}
+              </button>
+            </div>
+          </FadeIn>
+        </div>
+      </div>
+    </header>
+  );
+}
+
+
+
+=== FILE: src\components\home\Industries.jsx ===
+'use client';
+
+import React, { useState } from 'react';
+import FadeIn from '@/components/ui/FadeIn';
+
+export default function Industries({ dict, locale, wpData }) {
+  const [activeCard, setActiveCard] = useState(0);
+
+  // 1. ACF Başlık Bilgileri
+  const headerData = wpData?.pageFields?.industriesHeaderGroup;
+  const displayBadge = headerData?.badge || '';
+  const displayTitle = headerData?.title || '';
+  const displayDesc = headerData?.description || '';
+  const displayBtnViewAll = 'VIEW ALL SECTORS';
+
+  // 2. Doğrudan WordPress CPT Verisi
+  const rawWpIndustries = wpData?.industriesList || [];
+
+  const finalIndustries = rawWpIndustries
+    .filter((item) => item.title && item.title.trim() !== '')
+    .map((item, index) => ({
+      id: item.id || `ind-${index}`,
+      title: item.title,
+      image: item.featuredImage?.node?.sourceUrl || '',
+      description: item.industryFields?.description || '',
+      tag: item.industryFields?.tag || `0${index + 1} / SECTOR`,
+    }));
+
+  if (!displayTitle && !displayBadge && finalIndustries.length === 0) {
+    return null;
+  }
+
+  return (
+    <section className="py-28 px-6 md:px-16 bg-customSurface/60 border-t border-customBorder/80 relative overflow-hidden">
+      <div className="absolute inset-0 bg-customBg/20 pointer-events-none" />
+
+      <div className="max-w-7xl mx-auto relative z-10">
+        {/* Üst Başlık ve Buton Alanı */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-16 gap-8">
+          <FadeIn direction="up" className="max-w-2xl">
+            {displayBadge && (
+              <span className="inline-block font-mono text-xs text-customAccent tracking-widest uppercase mb-4 px-3.5 py-1.5 rounded-full bg-customAccent/10 border border-customAccent/20 font-semibold">
+                {displayBadge}
+              </span>
+            )}
+            {displayTitle && (
+              <h2 className="text-3xl md:text-5xl text-customText font-black leading-tight font-heading tracking-tight">
+                {displayTitle}
+              </h2>
+            )}
+            {displayDesc && (
+              <p className="text-customMuted text-base md:text-lg leading-relaxed font-normal mt-4">
+                {displayDesc}
+              </p>
+            )}
+          </FadeIn>
+
+          <FadeIn direction="up">
+            <a
+              href="#contact"
+              className="font-mono text-xs text-customText border border-customBorder bg-customBg/80 px-6 py-3 rounded-2xl hover:text-customAccent hover:border-customAccent/50 transition-all font-extrabold uppercase tracking-widest shadow-sm inline-flex items-center gap-2"
+            >
+              {displayBtnViewAll}
+              <span className="material-symbols-outlined text-sm">
+                arrow_forward
+              </span>
+            </a>
+          </FadeIn>
+        </div>
+
+        {/* Grid Yapısı */}
+        {finalIndustries.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {finalIndustries.map((ind, index) => {
+              const isActive = activeCard === index;
+              return (
+                <div
+                  key={ind.id}
+                  onMouseEnter={() => setActiveCard(index)}
+                  onClick={() => setActiveCard(index)}
+                  className={`relative h-[500px] rounded-3xl overflow-hidden border transition-all duration-500 ease-out cursor-pointer flex flex-col justify-end p-8 shadow-2xl bg-slate-950 ${
+                    isActive
+                      ? 'border-[#38bdf8] shadow-[0_0_30px_rgba(56,189,248,0.3)] lg:-translate-y-3'
+                      : 'border-customBorder/80 opacity-80 hover:opacity-100'
+                  }`}
+                >
+                  {/* Arka Plan Görseli */}
+                  {ind.image && (
+                    <div
+                      className={`absolute inset-0 bg-cover bg-center transition-transform duration-700 ${
+                        isActive ? 'scale-110' : 'scale-100'
+                      }`}
+                      style={{ backgroundImage: `url('${ind.image}')` }}
+                    />
+                  )}
+
+                  {/* Gradyan Maskesi */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/65 to-black/30" />
+
+                  {/* Üst Tag */}
+                  {ind.tag && (
+                    <div className="absolute top-6 left-6 z-20">
+                      <span className="font-mono text-xs text-white font-bold uppercase tracking-widest bg-black/70 px-3.5 py-1.5 rounded-full border border-white/20 backdrop-blur-md shadow-md">
+                        {ind.tag}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* İçerik */}
+                  <div className="relative z-10 text-white">
+                    <h4 className="text-white text-2xl font-black font-heading mb-3 tracking-tight drop-shadow-md">
+                      {ind.title}
+                    </h4>
+                    {ind.description && (
+                      <p className="text-gray-200 text-sm md:text-base leading-relaxed font-normal drop-shadow">
+                        {ind.description}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+
+
+=== FILE: src\components\home\News.jsx ===
+'use client';
+
+import React, { useEffect } from 'react';
+import Link from 'next/link';
+import FadeIn from '@/components/ui/FadeIn';
+
+export default function News({ dict, locale, wpData }) {
+  useEffect(() => {
+    if (window.location.hash === '#news') {
+      const newsSection = document.getElementById('news');
+      if (newsSection) {
+        setTimeout(() => {
+          newsSection.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+      }
+    }
+  }, []);
+
+  const headerData = wpData?.pageFields?.newsHeaderGroup;
+  const displayBadge = headerData?.badge || '';
+  const displayTitle = headerData?.title || '';
+  const displayDesc = headerData?.description || '';
+  const displayBtn =
+    headerData?.btnText || (locale === 'tr' ? 'TÜM HABERLER' : 'VIEW ALL NEWS');
+
+  const rawPosts = wpData?.newsList || [];
+
+  const finalPosts = rawPosts.map((post, index) => {
+    const formattedDate = post.date
+      ? new Date(post.date)
+          .toLocaleDateString(locale === 'en' ? 'en-US' : 'tr-TR', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+          })
+          .toUpperCase()
+      : '';
+
+    const firstCategory =
+      post.categories?.nodes?.[0]?.name ||
+      (locale === 'tr' ? 'HABERLER' : 'NEWS');
+
+    return {
+      id: post.id || `post-${index}`,
+      title: post.title,
+      slug: post.slug,
+      date: formattedDate,
+      category: firstCategory,
+      readTime: locale === 'tr' ? '5 dk okuma' : '5 min read',
+      image: post.featuredImage?.node?.sourceUrl || '',
+    };
+  });
+
+  if (!displayTitle && !displayBadge && finalPosts.length === 0) {
+    return null;
+  }
+
+  const readAnalysisText = locale === 'tr' ? 'DETAYLI OKU' : 'READ ANALYSIS';
+
+  return (
+    <section
+      id="news"
+      className="py-28 px-6 md:px-16 bg-customSurface/60 border-t border-customBorder/80 transition-colors duration-300 relative overflow-hidden"
+    >
+      <div className="absolute inset-0 bg-customBg/20 pointer-events-none" />
+
+      <div className="max-w-7xl mx-auto relative z-10">
+        <FadeIn direction="up">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
+            <div>
+              {displayBadge && (
+                <span className="inline-block font-mono text-xs md:text-sm text-customAccent tracking-widest uppercase mb-4 px-3.5 py-1.5 rounded-full bg-customAccent/10 border border-customAccent/20 font-semibold">
+                  {displayBadge}
+                </span>
+              )}
+              {displayTitle && (
+                <h2 className="text-3xl md:text-5xl text-customText font-black font-heading tracking-tight">
+                  {displayTitle}
+                </h2>
+              )}
+            </div>
+            {displayDesc && (
+              <p className="text-customMuted text-base md:text-lg max-w-md leading-relaxed font-normal">
+                {displayDesc}
+              </p>
+            )}
+          </div>
+        </FadeIn>
+
+        {finalPosts.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+            {finalPosts.map((post, index) => (
+              <FadeIn key={post.id} delay={index * 0.1} direction="up">
+                <Link
+                  href={`/${locale}/${post.slug}`}
+                  className="relative h-[480px] rounded-3xl overflow-hidden border border-customBorder/80 bg-slate-950 shadow-2xl flex flex-col justify-between p-8 group cursor-pointer hover:border-customAccent/60 transition-all duration-300 hover:-translate-y-2 block"
+                >
+                  {post.image && (
+                    <div
+                      className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110"
+                      style={{ backgroundImage: `url(${post.image})` }}
+                    />
+                  )}
+
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/30 transition-all duration-300" />
+
+                  <div className="relative z-20 flex items-center justify-between">
+                    {post.category && (
+                      <span className="font-mono text-xs text-white font-bold uppercase tracking-widest bg-black/70 px-4 py-1.5 rounded-full border border-white/20 backdrop-blur-md shadow-md">
+                        {post.category}
+                      </span>
+                    )}
+                    <span className="font-mono text-xs text-white/90 font-semibold bg-black/70 px-3.5 py-1.5 rounded-full border border-white/20 backdrop-blur-md ml-auto">
+                      {post.readTime}
+                    </span>
+                  </div>
+
+                  <div className="relative z-10 text-white">
+                    {post.date && (
+                      <span className="font-mono text-xs text-gray-300 block mb-2 font-semibold">
+                        {post.date}
+                      </span>
+                    )}
+
+                    <h3 className="text-xl md:text-2xl font-black font-heading text-white mb-6 leading-snug group-hover:text-[#38bdf8] transition-colors line-clamp-3 tracking-tight drop-shadow-md">
+                      {post.title}
+                    </h3>
+
+                    <div className="pt-5 border-t border-white/20 flex items-center justify-between">
+                      <span className="font-mono text-xs text-white group-hover:text-[#38bdf8] font-extrabold flex items-center gap-2 transition-all uppercase tracking-wider">
+                        {readAnalysisText}{' '}
+                        <span className="material-symbols-outlined text-sm group-hover:translate-x-1.5 transition-transform text-[#38bdf8]">
+                          arrow_forward
+                        </span>
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+              </FadeIn>
+            ))}
+          </div>
+        )}
+
+        <div className="text-center">
+          <Link
+            href={`/${locale}/news`}
+            className="inline-flex items-center gap-2.5 font-mono text-xs text-customText hover:text-white bg-customBg/80 hover:bg-customAccent border border-customBorder hover:border-customAccent px-8 py-4 rounded-2xl transition-all font-extrabold uppercase tracking-widest shadow-lg backdrop-blur-xl"
+          >
+            {displayBtn}
+            <span className="material-symbols-outlined text-sm">
+              arrow_forward
+            </span>
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+
+
+=== FILE: src\components\home\Services.jsx ===
+'use client';
+
+import React, { useMemo } from 'react';
+import FadeIn from '@/components/ui/FadeIn';
+
+export default function Services({ wpData }) {
+  const headerData = wpData?.pageFields?.servicesHeaderGroup;
+  const displayBadge = headerData?.badge || '';
+  const displayTitle = headerData?.title || '';
+  const displayDesc = headerData?.description || '';
+  const displayBtnLearnMore = headerData?.btnText || 'LEARN MORE';
+
+  const finalServices = useMemo(() => {
+    const rawWpServices = wpData?.servicesList || [];
+    return rawWpServices
+      .filter((item) => item.title && item.title.trim() !== '')
+      .map((item) => ({
+        id: item.id,
+        icon: item.serviceFields?.iconName || 'anchor',
+        title: item.title,
+        description: item.serviceFields?.shortDesc || '',
+      }));
+  }, [wpData?.servicesList]);
+
+  const handleCardClick = (e) => {
+    e.preventDefault();
+    const contactSection = document.getElementById('contact');
+    if (contactSection) {
+      const offset = 90;
+      const bodyRect = document.body.getBoundingClientRect().top;
+      const elementRect = contactSection.getBoundingClientRect().top;
+      const elementPosition = elementRect - bodyRect;
+      const offsetPosition = elementPosition - offset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth',
+      });
+    }
+  };
+
+  if (!displayTitle && !displayBadge && finalServices.length === 0) {
+    return null;
+  }
+
+  return (
+    <section
+      id="services"
+      className="py-24 md:py-28 bg-customBg relative overflow-hidden"
+    >
+      <div className="absolute inset-0 bg-customSurface/20 pointer-events-none" />
+
+      <div className="max-w-[1400px] w-full mx-auto px-6 md:px-12 relative z-10">
+        <FadeIn direction="up">
+          <div className="text-center max-w-3xl mx-auto mb-16 md:mb-20">
+            {displayBadge && (
+              <span className="inline-block font-mono text-xs md:text-sm text-customAccent tracking-widest uppercase mb-4 px-3.5 py-1.5 rounded-full bg-customAccent/10 border border-customAccent/20 font-semibold">
+                {displayBadge}
+              </span>
+            )}
+            {displayTitle && (
+              <h2 className="text-3xl md:text-5xl text-customText font-black mb-6 font-heading tracking-tight">
+                {displayTitle}
+              </h2>
+            )}
+            {displayDesc && (
+              <p className="text-customMuted text-base md:text-lg leading-relaxed font-normal">
+                {displayDesc}
+              </p>
+            )}
+          </div>
+        </FadeIn>
+
+        {finalServices.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 max-w-5xl mx-auto">
+            {finalServices.map((service, index) => (
+              <FadeIn
+                key={service.id || index}
+                delay={index * 0.15}
+                direction="up"
+                className="h-full"
+              >
+                <div className="h-full bg-customSurface/60 backdrop-blur-xl p-8 md:p-10 border border-customBorder/80 hover:border-customAccent/60 transition-all duration-300 group/card shadow-lg hover:shadow-2xl hover:shadow-customAccent/5 rounded-3xl flex flex-col justify-between hover:-translate-y-1">
+                  <div>
+                    <div className="p-4 bg-customBg/80 border border-customBorder w-fit rounded-2xl mb-6 group-hover/card:border-customAccent/40 group-hover/card:bg-customAccent/15 transition-all duration-300 shadow-sm">
+                      <span className="material-symbols-outlined text-3xl md:text-4xl text-customAccent block group-hover/card:scale-110 transition-transform duration-300">
+                        {service.icon}
+                      </span>
+                    </div>
+
+                    <h3 className="text-2xl font-bold font-heading text-customText mb-4 tracking-tight">
+                      {service.title}
+                    </h3>
+
+                    <p className="text-customMuted mb-8 text-sm md:text-base leading-relaxed font-normal whitespace-pre-line">
+                      {service.description}
+                    </p>
+                  </div>
+
+                  <a
+                    href="#contact"
+                    onClick={handleCardClick}
+                    className="font-mono text-xs text-customText font-extrabold flex items-center gap-2 group-hover/card:gap-3.5 group-hover/card:text-customAccent transition-all uppercase tracking-wider w-fit cursor-pointer mt-auto"
+                  >
+                    {displayBtnLearnMore}{' '}
+                    <span className="material-symbols-outlined text-sm transition-transform duration-300 group-hover/card:translate-x-1">
+                      arrow_forward
+                    </span>
+                  </a>
+                </div>
+              </FadeIn>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="absolute bottom-0 inset-x-0 h-12 bg-gradient-to-t from-customBg to-transparent pointer-events-none z-10" />
+    </section>
+  );
+}
+
+
+
+=== FILE: src\components\home\Specializations.jsx ===
+'use client';
+
+import React, { useState } from 'react';
+import { usePathname } from 'next/navigation';
+import FadeIn from '@/components/ui/FadeIn';
+
+export default function Specializations({ dict, locale, wpData }) {
+  const [hoveredIndex, setHoveredIndex] = useState(0);
+
+  const pathname = usePathname();
+  const currentLocale = pathname?.startsWith('/en') ? 'en' : 'tr';
+
+  // 1. ACF Başlık Bilgileri
+  const headerData = wpData?.pageFields?.specializationsHeaderGroup;
+  const displayBadge = headerData?.badge || '';
+  const displayTitle = headerData?.title || '';
+  const displayDesc = headerData?.description || '';
+
+  // 2. Doğrudan WordPress CPT Verisi (Gerçek ACF Şemana Göre Eşlendi)
+  const rawWpSpecs = wpData?.specializationsList || [];
+  const sectors = rawWpSpecs.map((item, index) => ({
+    id: item.id || `spec-${index}`,
+    title: item.title,
+    category: item.specFields?.category || '',
+    code: item.specFields?.code || '',
+    desc: item.specFields?.description || '',
+    statsValue: item.specFields?.statsValue || '',
+    statsLabel: item.specFields?.statsLabel || '',
+    image: item.featuredImage?.node?.sourceUrl || '',
+    icon: item.specFields?.iconName || 'precision_manufacturing',
+  }));
+
+  // Smooth Scroll Kaydırma Fonksiyonu
+  const handleBriefClick = (e) => {
+    e.preventDefault();
+    const contactSection = document.getElementById('contact');
+    if (contactSection) {
+      const offset = 90;
+      const bodyRect = document.body.getBoundingClientRect().top;
+      const elementRect = contactSection.getBoundingClientRect().top;
+      const elementPosition = elementRect - bodyRect;
+      const offsetPosition = elementPosition - offset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth',
+      });
+    }
+  };
+
+  // Eğer WordPress'ten ne başlık ne de kart verisi geldiyse bileşeni tamamen gizle
+  if (!displayTitle && !displayBadge && sectors.length === 0) {
+    return null;
+  }
+
+  // Buton Metni Dil Tanımı (TR: BİLGİ AL / EN: BRIEF)
+  const briefBtnLabel = currentLocale === 'tr' ? 'BİLGİ AL' : 'BRIEF';
+
+  return (
+    <section className="py-28 px-6 md:px-16 bg-customBg border-t border-customBorder/80 transition-colors duration-300 relative overflow-hidden">
+      <div className="absolute inset-0 bg-customSurface/20 pointer-events-none" />
+
+      <div className="max-w-7xl mx-auto relative z-10">
+        {/* BAŞLIK ALANI */}
+        <FadeIn direction="up">
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            {displayBadge && (
+              <span className="inline-block font-mono text-xs md:text-sm text-customAccent tracking-widest uppercase mb-4 px-3.5 py-1.5 rounded-full bg-customAccent/10 border border-customAccent/20 font-semibold">
+                {displayBadge}
+              </span>
+            )}
+            {displayTitle && (
+              <h2 className="text-3xl md:text-5xl text-customText font-black mb-6 font-heading tracking-tight">
+                {displayTitle}
+              </h2>
+            )}
+            {displayDesc && (
+              <p className="text-customMuted text-base md:text-lg leading-relaxed font-normal">
+                {displayDesc}
+              </p>
+            )}
+          </div>
+        </FadeIn>
+
+        {/* SİNEMATİK GENİŞLEYEN AKORDİYON GRID */}
+        {sectors.length > 0 && (
+          <div className="flex flex-col lg:flex-row gap-4 h-auto lg:h-[560px]">
+            {sectors.map((sector, index) => {
+              const isExpanded = hoveredIndex === index;
+
+              // Dinamik Sektör Kodu (Paneldeki 'code' basılır, boşsa '01 / SECTOR' basılır)
+              const formattedIndex = String(index + 1).padStart(2, '0');
+              const displayCode = sector.code || `${formattedIndex} / SECTOR`;
+
+              return (
+                <div
+                  key={sector.id}
+                  onMouseEnter={() => setHoveredIndex(index)}
+                  onClick={() => setHoveredIndex(index)}
+                  className={`relative rounded-3xl overflow-hidden border border-customBorder/80 bg-slate-950 shadow-2xl transition-all duration-700 ease-in-out cursor-pointer flex flex-col justify-end p-8 md:p-10 ${
+                    isExpanded ? 'lg:flex-[2.5]' : 'lg:flex-[1]'
+                  } h-[420px] lg:h-full`}
+                >
+                  {/* ARKA PLAN GÖRSELİ */}
+                  {sector.image && (
+                    <div
+                      className="absolute inset-0 bg-cover bg-center transition-transform duration-700 scale-105"
+                      style={{ backgroundImage: `url(${sector.image})` }}
+                    />
+                  )}
+
+                  {/* GRADYAN MASKESİ */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/65 to-black/30" />
+
+                  {/* ÜST BUTONLAR VE KATEGORİ ROZETİ */}
+                  <div className="absolute top-6 left-6 right-6 z-20 flex items-center justify-between">
+                    {sector.category && (
+                      <span className="font-mono text-xs text-white font-bold uppercase tracking-widest bg-black/70 px-4 py-1.5 rounded-full border border-white/20 backdrop-blur-md shadow-md">
+                        {sector.category}
+                      </span>
+                    )}
+                    <div className="w-10 h-10 rounded-2xl bg-black/70 backdrop-blur-md border border-white/25 flex items-center justify-center text-white shadow-lg ml-auto">
+                      <span className="material-symbols-outlined text-xl">
+                        {sector.icon}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* İÇERİK */}
+                  <div className="relative z-10 text-white">
+                    {/* SEKTÖR KODU / NUMARATÖR (code alanından çekilir) */}
+                    <span className="font-mono text-xs text-[#38bdf8] block mb-2 font-bold tracking-widest uppercase drop-shadow-sm">
+                      {displayCode}
+                    </span>
+
+                    <h3 className="text-2xl md:text-3xl font-black text-white font-heading mb-3 tracking-tight drop-shadow-md">
+                      {sector.title}
+                    </h3>
+
+                    {/* AÇIKLAMA METNİ */}
+                    {sector.desc && (
+                      <p
+                        className={`text-gray-200 text-sm md:text-base leading-relaxed mb-6 drop-shadow font-normal transition-all duration-500 ${
+                          isExpanded
+                            ? 'opacity-100 max-h-40'
+                            : 'opacity-0 lg:opacity-70 max-h-0 lg:max-h-12 overflow-hidden'
+                        }`}
+                      >
+                        {sector.desc}
+                      </p>
+                    )}
+
+                    {/* ALT KISIM (STATS & BUTTON) */}
+                    <div className="pt-6 border-t border-white/20 flex items-center justify-between">
+                      <div>
+                        {sector.statsValue && (
+                          <span className="font-mono text-2xl md:text-3xl font-black text-[#38bdf8] block tracking-tighter drop-shadow-sm">
+                            {sector.statsValue}
+                          </span>
+                        )}
+                        {sector.statsLabel && (
+                          <span className="font-mono text-xs text-white/90 uppercase tracking-wider font-bold">
+                            {sector.statsLabel}
+                          </span>
+                        )}
+                      </div>
+
+                      <a
+                        href="#contact"
+                        onClick={handleBriefClick}
+                        className="inline-flex items-center gap-2 font-mono text-xs text-white bg-white/10 hover:bg-white hover:text-slate-950 border border-white/30 px-4 py-2.5 rounded-xl transition-all font-extrabold uppercase tracking-wider backdrop-blur-md shadow-lg"
+                      >
+                        {briefBtnLabel}
+                        <span className="material-symbols-outlined text-sm">
+                          arrow_forward
+                        </span>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+
+
+=== FILE: src\components\home\Stats.jsx ===
+'use client';
+
+import React from 'react';
+import FadeIn from '@/components/ui/FadeIn';
+
+export default function Stats({ wpData }) {
+  const statsData = wpData?.pageFields?.statsGroup;
+
+  const rawStats = [
+    { value: statsData?.stat1Val, label: statsData?.stat1Lbl },
+    { value: statsData?.stat2Val, label: statsData?.stat2Lbl },
+    { value: statsData?.stat3Val, label: statsData?.stat3Lbl },
+    { value: statsData?.stat4Val, label: statsData?.stat4Lbl },
+  ];
+
+  const finalStats = rawStats.filter(
+    (item) =>
+      item.value &&
+      item.value.trim() !== '' &&
+      item.label &&
+      item.label.trim() !== '',
+  );
+
+  if (finalStats.length === 0) {
+    return null;
+  }
+
+  const gridColsClass =
+    finalStats.length === 2
+      ? 'md:grid-cols-2'
+      : finalStats.length === 3
+        ? 'md:grid-cols-3'
+        : 'md:grid-cols-4';
+
+  return (
+    <section className="py-16 md:py-24 bg-customBg text-customText border-y border-customBorder/80 transition-colors duration-300 relative overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-b from-customSurface/20 via-customSurface/40 to-customSurface/20 pointer-events-none" />
+
+      <div className="max-w-[1400px] w-full mx-auto px-6 md:px-12 relative z-10">
+        <div
+          className={`grid grid-cols-1 sm:grid-cols-2 ${gridColsClass} gap-6 md:gap-8 lg:gap-10 w-full`}
+        >
+          {finalStats.map((stat, index) => (
+            <FadeIn
+              key={index}
+              delay={index * 0.1}
+              direction="up"
+              className="w-full"
+            >
+              <div className="w-full p-8 md:p-10 rounded-3xl border border-customBorder/80 bg-customSurface/50 backdrop-blur-2xl text-center shadow-lg hover:border-customAccent/60 hover:bg-customSurface/80 hover:shadow-2xl hover:shadow-customAccent/5 transition-all duration-300 group flex flex-col justify-center items-center h-full min-h-[160px]">
+                <div className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-customAccent mb-3 font-black tracking-tight group-hover:scale-105 transition-transform duration-300 font-heading">
+                  {stat.value}
+                </div>
+
+                <div className="font-mono text-xs md:text-sm uppercase tracking-widest text-customMuted font-bold group-hover:text-customText transition-colors">
+                  {stat.label}
+                </div>
+              </div>
+            </FadeIn>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+
+
+=== FILE: src\components\layout\EmergencyWidget.jsx ===
+'use client';
+
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+
+export default function EmergencyWidget({ wpData }) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  // 1. WordPress ACF İletişim Grubu Verileri
+  const contactData = wpData?.pageFields?.contactGroup;
+
+  // ACF'ten gelen WhatsApp linki/numarası yoksa fallback kullanır
+  const rawWhatsapp = contactData?.whatsapp || '';
+
+  // Link veya Numara girilmişse sadece rakamları alarak wa.me formatına getirir
+  const cleanWhatsappNumber = rawWhatsapp
+    ? String(rawWhatsapp).replace(/\D/g, '')
+    : '';
+
+  const defaultMessage = encodeURIComponent(
+    'Hello Acunengy 24/7 Desk, I require urgent maritime/port agency support.',
+  );
+
+  return (
+    <div className="fixed bottom-6 right-6 z-40 flex flex-col items-end">
+      {/* Pop-up Kartı */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: 15, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 15, scale: 0.95 }}
+            className="mb-4 w-72 md:w-80 bg-customSurface border border-customBorder rounded-2xl shadow-2xl p-5 text-customText backdrop-blur-md"
+          >
+            <div className="flex justify-between items-center mb-3">
+              <span className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-emerald-500 font-bold">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+                24/7 Operations Desk
+              </span>
+              <button
+                onClick={() => setIsOpen(false)}
+                className="text-customMuted hover:text-customText transition-colors cursor-pointer"
+              >
+                <span className="material-symbols-outlined text-sm">close</span>
+              </button>
+            </div>
+
+            <h4 className="font-heading font-bold text-base mb-1">
+              Urgent Vessel Support?
+            </h4>
+            <p className="text-customMuted text-xs mb-4 leading-relaxed">
+              Direct line to our duty manager at Izmir HQ for immediate port
+              clearance & technical emergencies.
+            </p>
+
+            <a
+              href={`https://wa.me/${cleanWhatsappNumber}?text=${defaultMessage}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-mono text-xs font-bold uppercase tracking-wider rounded-xl flex items-center justify-center gap-2 transition-all shadow-md active:scale-95"
+            >
+              <span className="material-symbols-outlined text-sm">chat</span>
+              Start WhatsApp Chat
+            </a>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Ana Yüzen Buton */}
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="relative bg-[#0B2341] dark:bg-customAccent text-white dark:text-[#0B2341] p-4 rounded-full shadow-2xl border border-white/20 flex items-center justify-center group hover:scale-105 active:scale-95 transition-all cursor-pointer"
+        aria-label="24/7 Emergency Support"
+      >
+        <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-emerald-500 border-2 border-[#0B2341] rounded-full animate-pulse" />
+        <span className="material-symbols-outlined text-2xl group-hover:rotate-12 transition-transform">
+          support_agent
+        </span>
+      </button>
+    </div>
+  );
+}
+
+
+
+=== FILE: src\components\layout\Footer.jsx ===
+'use client';
+
+import React from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+
+export default function Footer({ dict, locale, wpData }) {
+  const currentYear = new Date().getFullYear();
+  const pathname = usePathname();
+
+  const activeLocale = locale || (pathname?.startsWith('/en') ? 'en' : 'tr');
+  const isTr = activeLocale === 'tr';
+
+  const contactData = wpData?.pageFields?.contactGroup;
+
+  const displayPhone = contactData?.phone || '';
+  const displayEmail = contactData?.email || '';
+  const displayAddress = contactData?.address || '';
+  const whatsappUrl = contactData?.whatsapp || '';
+
+  const rawServices = wpData?.servicesList || [];
+  const services = rawServices.slice(0, 5);
+
+  return (
+    <footer className="bg-slate-950 text-white border-t border-white/10 pt-24 pb-12 transition-colors duration-300 relative overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-customSurface/10 to-black/40 pointer-events-none" />
+
+      <div className="max-w-7xl mx-auto px-6 md:px-16 relative z-10">
+        <div className="bg-white/[0.03] border border-white/10 rounded-3xl p-6 md:p-8 mb-20 flex flex-col lg:flex-row items-center justify-between gap-6 backdrop-blur-xl shadow-2xl">
+          <div className="flex items-center gap-4">
+            <span className="w-3 h-3 rounded-full bg-rose-500 animate-ping shrink-0" />
+            <div>
+              <span className="font-mono text-[11px] text-[#38bdf8] tracking-widest uppercase font-extrabold block mb-1">
+                {isTr ? '7/24 ACİL DURUM MASASI' : '24/7 EMERGENCY DESK'}
+              </span>
+              <h3 className="text-lg font-bold font-heading text-white tracking-tight">
+                {isTr
+                  ? 'Anlık Gemi ve Liman Acenteliği Desteği'
+                  : 'Immediate Vessel & Port Agency Support'}
+              </h3>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-4">
+            {displayPhone && (
+              <a
+                href={`tel:${displayPhone.replace(/\s+/g, '')}`}
+                className="font-mono text-xs text-white bg-rose-600/90 hover:bg-rose-600 px-5 py-3.5 rounded-2xl font-bold transition-all flex items-center gap-2 uppercase tracking-wider shadow-lg active:scale-95"
+              >
+                <span className="material-symbols-outlined text-sm">
+                  phone_in_talk
+                </span>
+                {displayPhone}
+              </a>
+            )}
+            {whatsappUrl && (
+              <a
+                href={whatsappUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-mono text-xs text-white bg-emerald-600/90 hover:bg-emerald-600 px-5 py-3.5 rounded-2xl font-bold transition-all flex items-center gap-2 uppercase tracking-wider shadow-lg active:scale-95"
+              >
+                <span className="material-symbols-outlined text-sm">chat</span>
+                {isTr ? 'WHATSAPP HATTI' : 'WHATSAPP DESK'}
+              </a>
+            )}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12 mb-16">
+          <div className="lg:col-span-4 space-y-5">
+            <div className="flex items-center gap-3">
+              <span className="font-heading font-black text-2xl text-white tracking-tight">
+                ACUNENGY
+              </span>
+              <span className="font-mono text-[10px] text-[#38bdf8] border border-[#38bdf8]/30 bg-[#38bdf8]/10 px-2.5 py-0.5 rounded-md uppercase font-bold">
+                SHIPPING
+              </span>
+            </div>
+
+            <p className="text-gray-400 text-sm leading-relaxed font-normal">
+              {isTr
+                ? 'Uluslararası ticaret koridorlarında küresel denizcilik çözümleri, ağır yük mühendisliği ve tavizsiz liman acenteliği hizmetleri.'
+                : 'Global maritime solutions, heavy-lift engineering, and uncompromised port agency services across international trade corridors.'}
+            </p>
+
+            <div className="pt-2 font-mono text-xs text-gray-300 space-y-2">
+              <p className="font-bold text-white">
+                {isTr ? 'Türkiye Genel Merkez:' : 'Turkish Global HQ:'}
+              </p>
+              <p className="text-gray-400">{displayAddress}</p>
+              <p className="text-[#38bdf8] font-semibold pt-1">
+                {displayEmail}
+              </p>
+            </div>
+          </div>
+
+          {services && services.length > 0 && (
+            <div className="lg:col-span-2 space-y-4 lg:pl-4">
+              <h3 className="font-mono text-xs text-[#38bdf8] font-bold uppercase tracking-widest">
+                {isTr ? 'HİZMETLER' : 'SERVICES'}
+              </h3>
+              <ul className="space-y-2.5 text-sm text-gray-400 font-medium cursor-default">
+                {services.map((service) => (
+                  <li key={service.id}>
+                    <span>{service.title}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          <div className="lg:col-span-4 space-y-4">
+            <h3 className="font-mono text-xs text-[#38bdf8] font-bold uppercase tracking-widest">
+              {isTr ? 'GENEL MERKEZ KONUMU' : 'GLOBAL OFFICE LOCATION'}
+            </h3>
+            <div className="relative h-44 rounded-2xl overflow-hidden border border-white/10 shadow-xl">
+              <iframe
+                title="Acunengy HQ Google Maps"
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3124.938834018332!2d27.1422!3d38.4358!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzjCsDI2JzA4LjkiTiAyN8KwMDgnMzMid0JF!5e0!3m2!1sen!2str!4v1620000000000!5m2!1sen!2str"
+                width="100%"
+                height="100%"
+                style={{
+                  border: 0,
+                  filter: 'grayscale(0.8) contrast(1.2) invert(0.9)',
+                }}
+                allowFullScreen=""
+                loading="lazy"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between text-xs text-gray-400 font-mono gap-4">
+          <p>
+            {isTr
+              ? '© 2026 Acunengy Shipping. Tüm hakları saklıdır. A Sınıfı Gemi Acentesi.'
+              : '© 2026 Acunengy Shipping. All rights reserved. Class-A Ship Agency.'}
+          </p>
+
+          <p className="text-gray-400">
+            Built with ⚡ by{' '}
+            <a
+              href="https://oguzhansahin.vercel.app/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gray-200 hover:text-[#38bdf8] transition-colors font-bold underline decoration-white/20 underline-offset-4"
+            >
+              Oğuzhan Şahin
+            </a>
+          </p>
+
+          <div className="flex items-center gap-6">
+            <Link
+              href={`/${activeLocale}/privacy`}
+              className="hover:text-white transition-colors"
+            >
+              {isTr ? 'Gizlilik Politikası' : 'Privacy Policy'}
+            </Link>
+            <Link
+              href={`/${activeLocale}/terms`}
+              className="hover:text-white transition-colors"
+            >
+              {isTr ? 'Kullanım Şartları' : 'Terms of Service'}
+            </Link>
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+
+
+=== FILE: src\components\layout\Navbar.jsx ===
+'use client';
+
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
+import { motion } from 'framer-motion';
+
+export default function Navbar() {
+  const [activeSection, setActiveSection] = useState('hero');
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const pathname = usePathname();
+  const router = useRouter();
+  const currentLocale = pathname?.startsWith('/en') ? 'en' : 'tr';
+
+  const navItems = useMemo(
+    () => [
+      { id: 'hero', label: currentLocale === 'tr' ? 'ANASAYFA' : 'HOME' },
+      { id: 'about', label: currentLocale === 'tr' ? 'HAKKIMIZDA' : 'ABOUT' },
+      {
+        id: 'services',
+        label: currentLocale === 'tr' ? 'HİZMETLER' : 'SERVICES',
+      },
+      {
+        id: 'approach',
+        label: currentLocale === 'tr' ? 'YAKLAŞIMIMIZ' : 'APPROACH',
+      },
+      { id: 'news', label: currentLocale === 'tr' ? 'BÜLTEN' : 'INSIGHTS' },
+      { id: 'contact', label: currentLocale === 'tr' ? 'İLETİŞİM' : 'CONTACT' },
+    ],
+    [currentLocale],
+  );
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+
+      const sections = navItems.map((item) => document.getElementById(item.id));
+      const scrollPosition = window.scrollY + 180;
+
+      for (let i = sections.length - 1; i >= 0; i--) {
+        const section = sections[i];
+        if (section && section.offsetTop <= scrollPosition) {
+          setActiveSection(navItems[i].id);
+          break;
+        }
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [navItems]);
+
+  const scrollToSection = useCallback((e, id) => {
+    e.preventDefault();
+    setIsMobileMenuOpen(false);
+
+    const element = document.getElementById(id);
+    if (element) {
+      const offset = 90;
+      const bodyRect = document.body.getBoundingClientRect().top;
+      const elementRect = element.getBoundingClientRect().top;
+      const elementPosition = elementRect - bodyRect;
+      const offsetPosition = elementPosition - offset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth',
+      });
+    }
+  }, []);
+
+  // Soft Navigation: scroll: false ile sayfa pozisyonunu koruyarak dil değiştirme
+  const toggleLanguage = useCallback(() => {
+    const nextLocale = currentLocale === 'tr' ? 'en' : 'tr';
+    const cleanPath = pathname.replace(/^\/(tr|en)/, '');
+    const newPath = `/${nextLocale}${cleanPath || ''}`;
+
+    router.push(newPath, { scroll: false });
+  }, [currentLocale, pathname, router]);
+
+  return (
+    <header className="fixed top-6 inset-x-0 z-50 flex justify-center px-4 md:px-8 transition-all duration-300">
+      <nav
+        lang={currentLocale}
+        className={`w-full max-w-7xl rounded-full border backdrop-blur-2xl transition-all duration-300 flex items-center justify-between px-6 md:px-8 py-3.5 shadow-2xl ${
+          isScrolled
+            ? 'bg-customBg/95 border-customAccent/40 shadow-black/30'
+            : 'bg-customBg/85 border-customBorder/80 shadow-black/20'
+        }`}
+      >
+        <div className="hidden lg:flex items-center gap-1 relative bg-customSurface/40 p-1.5 rounded-full border border-customBorder/50">
+          {navItems.map((item) => {
+            const isActive = activeSection === item.id;
+            return (
+              <a
+                key={item.id}
+                href={`#${item.id}`}
+                onClick={(e) => scrollToSection(e, item.id)}
+                className={`relative px-4 py-2 text-[13px] font-mono tracking-wider transition-colors duration-200 z-10 ${
+                  isActive
+                    ? 'text-customBg font-extrabold'
+                    : 'text-customText/80 font-semibold hover:text-customText'
+                }`}
+              >
+                {isActive && (
+                  <motion.div
+                    layoutId="activeBubble"
+                    className="absolute inset-0 bg-customAccent rounded-full -z-10 shadow-md"
+                    transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                  />
+                )}
+                {item.label}
+              </a>
+            );
+          })}
+        </div>
+
+        <a
+          href="#hero"
+          onClick={(e) => scrollToSection(e, 'hero')}
+          className="flex gap-1 items-center justify-center font-heading font-black tracking-tight leading-none hover:opacity-90 transition-opacity drop-shadow-md py-1 px-2"
+        >
+          <span className="text-lg md:text-xl text-customText">ACUNENGY</span>
+          <span className="text-lg md:text-xl text-customAccent">SHIPPING</span>
+        </a>
+
+        {/* Masaüstü Dil Butonu */}
+        <div className="hidden lg:flex items-center gap-4">
+          <button
+            type="button"
+            onClick={toggleLanguage}
+            className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-customAccent text-customBg font-mono text-sm font-extrabold tracking-widest hover:brightness-110 active:scale-95 transition-all shadow-lg border border-white/25 cursor-pointer"
+          >
+            <span className="text-slate-900">🌐</span>
+            <span>{currentLocale === 'tr' ? 'EN' : 'TR'}</span>
+          </button>
+        </div>
+
+        {/* Mobil Dil ve Hamburger Menü */}
+        <div className="flex lg:hidden items-center gap-3">
+          <button
+            type="button"
+            onClick={toggleLanguage}
+            className="px-3.5 py-1.5 rounded-full bg-customAccent text-customBg font-mono text-xs font-bold shadow-md flex items-center gap-1 cursor-pointer"
+          >
+            <span>🌐</span>
+            <span>{currentLocale === 'tr' ? 'EN' : 'TR'}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="text-customText p-1 text-2xl cursor-pointer"
+            aria-label="Toggle Menu"
+          >
+            {isMobileMenuOpen ? '✕' : '☰'}
+          </button>
+        </div>
+      </nav>
+
+      {isMobileMenuOpen && (
+        <div className="lg:hidden absolute top-20 inset-x-4 bg-customBg/95 border border-customBorder backdrop-blur-2xl rounded-2xl p-6 shadow-2xl flex flex-col gap-3 z-50">
+          {navItems.map((item) => (
+            <a
+              key={item.id}
+              href={`#${item.id}`}
+              onClick={(e) => scrollToSection(e, item.id)}
+              className={`px-4 py-3 rounded-xl text-sm font-mono tracking-wider font-semibold transition-all ${
+                activeSection === item.id
+                  ? 'text-customBg font-extrabold bg-customAccent shadow-sm'
+                  : 'text-customText hover:bg-customSurface'
+              }`}
+            >
+              {item.label}
+            </a>
+          ))}
+        </div>
+      )}
+    </header>
+  );
+}
+
+
+
+=== FILE: src\components\ui\FadeIn.jsx ===
+'use client';
+
+import { motion } from 'framer-motion';
+
+export default function FadeIn({
+  children,
+  delay = 0,
+  direction = 'up',
+  className = '',
+}) {
+  const directions = {
+    up: { y: 30, x: 0 },
+    down: { y: -30, x: 0 },
+    left: { x: 30, y: 0 },
+    right: { x: -30, y: 0 },
+  };
+
+  return (
+    <motion.div
+      initial={{
+        opacity: 0,
+        ...directions[direction],
+      }}
+      whileInView={{
+        opacity: 1,
+        x: 0,
+        y: 0,
+      }}
+      viewport={{ once: true, margin: '-60px' }}
+      transition={{
+        duration: 0.6,
+        delay: delay,
+        ease: [0.21, 0.47, 0.32, 0.98],
+      }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+
+
+=== FILE: src\components\ui\HeroQuoteButton.jsx ===
+'use client';
+
+import { useState } from 'react';
+import QuoteModal from '@/components/ui/QuoteModal';
+
+export default function HeroQuoteButton({ label, locale = 'tr' }) {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setIsModalOpen(true)}
+        className="bg-customAccent text-customBg px-10 py-4 font-mono text-sm uppercase tracking-widest hover:brightness-110 active:scale-95 transition-all font-bold shadow-lg shadow-customAccent/20 cursor-pointer"
+      >
+        {label}
+      </button>
+
+      {/* Teklif Alma Modalı */}
+      <QuoteModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        locale={locale}
+      />
+    </>
+  );
+}
+
+
+
+=== FILE: src\components\ui\Preloader.jsx ===
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
+
+export default function Preloader() {
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const hasLoaded = sessionStorage.getItem('hasLoaded');
+
+    if (hasLoaded) {
+      setIsLoading(false);
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+      sessionStorage.setItem('hasLoaded', 'true');
+    }, 1200);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (!isLoading) return null;
+
+  return (
+    <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-slate-950 transition-opacity duration-500">
+      <div className="relative w-[340px] sm:w-[420px] md:w-[500px] h-36 md:h-44 animate-pulse drop-shadow-[0_0_50px_rgba(56,189,248,0.7)]">
+        <Image
+          src="/images/logo.png"
+          alt="Acunengy Shipping Logo"
+          fill
+          priority
+          className="object-contain brightness-0 invert"
+        />
+      </div>
+    </div>
+  );
+}
+
+
+
+=== FILE: src\components\ui\QuoteModal.jsx ===
+'use client';
+
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import emailjs from '@emailjs/browser';
+
+export default function QuoteModal({ isOpen, onClose, locale = 'tr' }) {
+  const isTr = locale.toLowerCase() === 'tr';
+
+  const defaultServices = [
+    {
+      id: 'ship-agency',
+      title: isTr ? 'Gemi Acenteliği' : 'Ship Agency',
+      desc: isTr
+        ? 'Liman giriş-çıkış formaliteleri, gümrük evrakları ve boğaz transit geçiş klerens işlemleri.'
+        : 'Port entrance/exit clearance, customs formalities, and Turkish straits transit clearance.',
+      icon: 'directions_boat',
+    },
+    {
+      id: 'project-cargo',
+      title: isTr ? 'Proje Kargo Koordinasyonu' : 'Project Cargo Coordination',
+      desc: isTr
+        ? 'Ağır yük, gabari dışı kargo ve rüzgar enerjisi ekipmanlarının taşıma planlaması.'
+        : 'Transport planning and coordination for heavy-lift, out-of-gauge, and wind energy equipment.',
+      icon: 'precision_manufacturing',
+    },
+  ];
+
+  const [step, setStep] = useState(1);
+  const [selectedService, setSelectedService] = useState(
+    defaultServices[0].title,
+  );
+  const [formData, setFormData] = useState({
+    vesselName: '',
+    port: '',
+    name: '',
+    email: '',
+    message: '',
+  });
+
+  const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+
+  if (!isOpen) return null;
+
+  const handleNext = () => {
+    let newErrors = {};
+    if (step === 2) {
+      if (!formData.vesselName.trim())
+        newErrors.vesselName = isTr
+          ? 'Gemi adı zorunludur.'
+          : 'Vessel name is required.';
+      if (!formData.port.trim())
+        newErrors.port = isTr
+          ? 'Hedef liman zorunludur.'
+          : 'Target port is required.';
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
+    setErrors({});
+    setStep((prev) => Math.min(prev + 1, 3));
+  };
+
+  const handlePrev = () => {
+    setErrors({});
+    setStep((prev) => Math.max(prev - 1, 1));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    let newErrors = {};
+    if (!formData.name.trim())
+      newErrors.name = isTr ? 'Ad Soyad zorunludur.' : 'Full name is required.';
+    if (!formData.email.trim())
+      newErrors.email = isTr
+        ? 'E-posta adresi zorunludur.'
+        : 'Corporate email is required.';
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
+    setErrors({});
+    setIsSubmitting(true);
+
+    emailjs
+      .send(
+        process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID,
+        process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID,
+        {
+          user_name: formData.name,
+          user_email: formData.email,
+          user_service: `[TEKLİF MODALI] ${selectedService}`,
+          message: `🚢 Gemi / IMO: ${formData.vesselName}\n📍 Hedef Liman: ${formData.port}\n📝 Ek Notlar: ${formData.message || 'Belirtilmedi'}`,
+        },
+        process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY,
+      )
+      .then(
+        () => {
+          setIsSubmitting(false);
+          setIsSubmitted(true);
+
+          setTimeout(() => {
+            setIsSubmitted(false);
+            setStep(1);
+            setFormData({
+              vesselName: '',
+              port: '',
+              name: '',
+              email: '',
+              message: '',
+            });
+            onClose();
+          }, 4000);
+        },
+        (error) => {
+          setIsSubmitting(false);
+          console.error('Modal EmailJS Error:', error);
+          setErrors({
+            submit: isTr
+              ? 'Gönderim başarısız oldu. Lütfen tekrar deneyin.'
+              : 'Transmission failed. Please try again.',
+          });
+        },
+      );
+  };
+
+  return (
+    <AnimatePresence>
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95, y: 15 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.95, y: 15 }}
+          transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+          className="relative w-full max-w-2xl max-h-[75vh] mt-16 md:mt-20 overflow-y-auto custom-scrollbar bg-customSurface border border-customBorder/80 rounded-[2rem] md:rounded-[2.5rem] shadow-[0_25px_60px_-15px_rgba(0,0,0,0.5)] p-6 md:p-8 text-customText backdrop-blur-3xl"
+        >
+          <div className="flex items-center justify-between pb-4 mb-5 border-b border-customBorder/80">
+            <div className="flex items-center gap-3">
+              <span className="w-2.5 h-2.5 rounded-full bg-customAccent animate-pulse shadow-[0_0_10px_var(--customAccent)]" />
+              <span className="font-mono text-[10px] md:text-xs uppercase tracking-widest text-customAccent font-extrabold">
+                {isTr ? 'OPERASYON MASASI' : 'EXECUTIVE DESK'} /{' '}
+                {isTr ? 'ADIM' : 'STEP'} {step} / 3
+              </span>
+            </div>
+            <button
+              onClick={onClose}
+              className="w-8 h-8 rounded-full bg-slate-800 dark:bg-customBg border border-slate-700 dark:border-customBorder flex items-center justify-center text-white dark:text-customMuted hover:bg-slate-700 dark:hover:text-customText hover:border-customAccent transition-all cursor-pointer shrink-0"
+            >
+              <span className="material-symbols-outlined text-xs">close</span>
+            </button>
+          </div>
+
+          {!isSubmitted ? (
+            <div>
+              {step === 1 && (
+                <div className="space-y-5">
+                  <div>
+                    <h3 className="text-xl md:text-2xl font-black font-heading tracking-tight mb-1">
+                      {isTr
+                        ? 'Hizmet Türü Seçiniz'
+                        : 'Select Service Framework'}
+                    </h3>
+                    <p className="text-customMuted text-xs">
+                      {isTr
+                        ? 'Operasyonunuz için gerekli olan ana hizmet alanını belirleyin.'
+                        : 'Choose the primary maritime division required for your operation.'}
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {defaultServices.map((srv) => (
+                      <div
+                        key={srv.id}
+                        onClick={() => setSelectedService(srv.title)}
+                        className={`p-5 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between group ${
+                          selectedService === srv.title
+                            ? 'border-customAccent bg-customAccent/10 shadow-lg shadow-customAccent/5'
+                            : 'border-customBorder hover:border-customAccent/40 bg-customBg/50'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between mb-3">
+                          <span
+                            className={`material-symbols-outlined text-3xl transition-colors ${
+                              selectedService === srv.title
+                                ? 'text-customAccent'
+                                : 'text-customMuted group-hover:text-customText'
+                            }`}
+                          >
+                            {srv.icon}
+                          </span>
+                          <div
+                            className={`w-5 h-5 rounded-full border flex items-center justify-center ${
+                              selectedService === srv.title
+                                ? 'border-customAccent bg-customAccent text-slate-950 font-bold text-xs'
+                                : 'border-customBorder'
+                            }`}
+                          >
+                            {selectedService === srv.title && '✓'}
+                          </div>
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-sm md:text-base tracking-tight mb-1 text-customText">
+                            {srv.title}
+                          </h4>
+                          <p className="text-xs text-customMuted leading-relaxed">
+                            {srv.desc}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="pt-2 flex justify-end">
+                    <button
+                      type="button"
+                      onClick={handleNext}
+                      className="px-6 py-3 bg-customAccent text-white font-mono text-xs uppercase tracking-widest font-black rounded-xl hover:brightness-110 shadow-lg shadow-customAccent/20 transition-all cursor-pointer inline-flex items-center gap-2"
+                    >
+                      {isTr ? 'Devam Et →' : 'Proceed to Parameters →'}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {step === 2 && (
+                <div className="space-y-5">
+                  <div>
+                    <h3 className="text-xl md:text-2xl font-black font-heading tracking-tight mb-1">
+                      {isTr ? 'Gemi ve Lokasyon Bilgisi' : 'Vessel & Location'}
+                    </h3>
+                    <p className="text-customMuted text-xs">
+                      {isTr
+                        ? 'Liman ve terminal planlaması için gemi detaylarını giriniz.'
+                        : 'Provide vessel identification for terminal scheduling.'}
+                    </p>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="space-y-1">
+                      <label className="font-mono text-xs text-customMuted uppercase font-bold tracking-wider block">
+                        {isTr
+                          ? 'Gemi Adı / IMO Numarası'
+                          : 'Vessel Name / IMO Number'}{' '}
+                        <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Örn: MV ACUNENGY / IMO 9876543"
+                        value={formData.vesselName}
+                        onChange={(e) => {
+                          setFormData({
+                            ...formData,
+                            vesselName: e.target.value,
+                          });
+                          if (errors.vesselName)
+                            setErrors({ ...errors, vesselName: null });
+                        }}
+                        className={`w-full bg-customBg border rounded-xl p-3.5 text-sm focus:outline-none transition-colors text-customText placeholder:text-customMuted/40 font-medium ${
+                          errors.vesselName
+                            ? 'border-red-500/50 focus:border-red-500 bg-red-500/5'
+                            : 'border-customBorder focus:border-customAccent'
+                        }`}
+                      />
+                      {errors.vesselName && (
+                        <p className="text-red-500 text-[11px] font-bold mt-1">
+                          {errors.vesselName}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="font-mono text-xs text-customMuted uppercase font-bold tracking-wider block">
+                        {isTr
+                          ? 'Hedef Liman / Terminal'
+                          : 'Target Port / Terminal'}{' '}
+                        <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Örn: Alsancak Limanı / Nemrut Körfezi"
+                        value={formData.port}
+                        onChange={(e) => {
+                          setFormData({ ...formData, port: e.target.value });
+                          if (errors.port) setErrors({ ...errors, port: null });
+                        }}
+                        className={`w-full bg-customBg border rounded-xl p-3.5 text-sm focus:outline-none transition-colors text-customText placeholder:text-customMuted/40 font-medium ${
+                          errors.port
+                            ? 'border-red-500/50 focus:border-red-500 bg-red-500/5'
+                            : 'border-customBorder focus:border-customAccent'
+                        }`}
+                      />
+                      {errors.port && (
+                        <p className="text-red-500 text-[11px] font-bold mt-1">
+                          {errors.port}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="pt-2 flex justify-between items-center">
+                    <button
+                      type="button"
+                      onClick={handlePrev}
+                      className="px-5 py-3 bg-slate-800 dark:bg-transparent border border-slate-700 dark:border-customBorder text-white dark:text-customMuted hover:text-white dark:hover:text-customText text-xs font-mono uppercase font-bold rounded-xl transition-all cursor-pointer"
+                    >
+                      ← {isTr ? 'Geri' : 'Back'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleNext}
+                      className="px-6 py-3 bg-customAccent text-white font-mono text-xs uppercase tracking-widest font-black rounded-xl hover:brightness-110 shadow-lg shadow-customAccent/20 transition-all cursor-pointer"
+                    >
+                      {isTr ? 'Devam Et →' : 'Continue →'}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {step === 3 && (
+                <form onSubmit={handleSubmit} className="space-y-5">
+                  <div>
+                    <h3 className="text-xl md:text-2xl font-black font-heading tracking-tight mb-1">
+                      {isTr ? 'İletişim Bilgileri' : 'Representative Details'}
+                    </h3>
+                    <p className="text-customMuted text-xs">
+                      {isTr
+                        ? 'Resmi teklif özetinin iletileceği yetkili bilgilerini giriniz.'
+                        : 'Where should our commercial desk transmit the official estimate?'}
+                    </p>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <label className="font-mono text-xs text-customMuted uppercase font-bold tracking-wider block">
+                          {isTr ? 'Ad Soyad' : 'Full Name'}{' '}
+                          <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          placeholder={
+                            isTr ? 'Kaptan / Yetkili' : 'Captain / Manager'
+                          }
+                          value={formData.name}
+                          onChange={(e) => {
+                            setFormData({ ...formData, name: e.target.value });
+                            if (errors.name)
+                              setErrors({ ...errors, name: null });
+                          }}
+                          className={`w-full bg-customBg border rounded-xl p-3.5 text-sm focus:outline-none transition-colors text-customText placeholder:text-customMuted/40 font-medium ${
+                            errors.name
+                              ? 'border-red-500/50 focus:border-red-500 bg-red-500/5'
+                              : 'border-customBorder focus:border-customAccent'
+                          }`}
+                        />
+                        {errors.name && (
+                          <p className="text-red-500 text-[11px] font-bold mt-1">
+                            {errors.name}
+                          </p>
+                        )}
+                      </div>
+                      <div className="space-y-1">
+                        <label className="font-mono text-xs text-customMuted uppercase font-bold tracking-wider block">
+                          {isTr ? 'Kurumsal E-posta' : 'Corporate Email'}{' '}
+                          <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="email"
+                          placeholder="name@company.com"
+                          value={formData.email}
+                          onChange={(e) => {
+                            setFormData({ ...formData, email: e.target.value });
+                            if (errors.email)
+                              setErrors({ ...errors, email: null });
+                          }}
+                          className={`w-full bg-customBg border rounded-xl p-3.5 text-sm focus:outline-none transition-colors text-customText placeholder:text-customMuted/40 font-medium ${
+                            errors.email
+                              ? 'border-red-500/50 focus:border-red-500 bg-red-500/5'
+                              : 'border-customBorder focus:border-customAccent'
+                          }`}
+                        />
+                        {errors.email && (
+                          <p className="text-red-500 text-[11px] font-bold mt-1">
+                            {errors.email}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="font-mono text-xs text-customMuted uppercase font-bold tracking-wider block">
+                        {isTr
+                          ? 'Ek Notlar / Detaylar'
+                          : 'Additional Scope / Remarks'}
+                      </label>
+                      <textarea
+                        rows={2}
+                        placeholder={
+                          isTr
+                            ? 'Laycan tarihleri, özel kargo gereksinimleri...'
+                            : 'Laycan dates, specific cargo constraints...'
+                        }
+                        value={formData.message}
+                        onChange={(e) =>
+                          setFormData({ ...formData, message: e.target.value })
+                        }
+                        className="w-full bg-customBg border border-customBorder rounded-xl p-3.5 text-sm focus:outline-none focus:border-customAccent text-customText transition-colors resize-none placeholder:text-customMuted/40 font-medium"
+                      />
+                    </div>
+
+                    {errors.submit && (
+                      <p className="text-red-500 font-mono text-xs font-bold text-center">
+                        {errors.submit}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="pt-2 flex justify-between items-center">
+                    <button
+                      type="button"
+                      disabled={isSubmitting}
+                      onClick={handlePrev}
+                      className="px-5 py-3 bg-slate-800 dark:bg-transparent border border-slate-700 dark:border-customBorder text-white dark:text-customMuted hover:text-white dark:hover:text-customText text-xs font-mono uppercase font-bold rounded-xl transition-all cursor-pointer disabled:opacity-50"
+                    >
+                      ← {isTr ? 'Geri' : 'Back'}
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="px-7 py-3 bg-customAccent text-white font-mono text-xs uppercase tracking-widest font-black rounded-xl hover:brightness-110 shadow-xl shadow-customAccent/30 transition-all cursor-pointer disabled:opacity-50 flex items-center gap-2"
+                    >
+                      {isSubmitting
+                        ? isTr
+                          ? 'GÖNDERİLİYOR...'
+                          : 'TRANSMITTING...'
+                        : isTr
+                          ? 'TEKLİFİ GÖNDER ✓'
+                          : 'DISPATCH TENDER ✓'}
+                    </button>
+                  </div>
+                </form>
+              )}
+            </div>
+          ) : (
+            <div className="py-10 text-center space-y-3">
+              <div className="w-16 h-16 bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 rounded-full flex items-center justify-center mx-auto shadow-2xl shadow-emerald-500/20 animate-bounce">
+                <span className="material-symbols-outlined text-3xl">
+                  verified
+                </span>
+              </div>
+              <h3 className="text-2xl font-black font-heading tracking-tight text-customText">
+                {isTr ? 'Talebiniz Alındı' : 'Parameters Dispatched'}
+              </h3>
+              <p className="text-customMuted text-sm font-normal max-w-sm mx-auto leading-relaxed">
+                {isTr
+                  ? 'Operasyon masamıza talebiniz iletildi. En kısa sürede sizinle iletişime geçilecektir.'
+                  : 'Executive port operations desk connection established. Official response incoming within 2 hours.'}
+              </p>
+            </div>
+          )}
+        </motion.div>
+      </div>
+    </AnimatePresence>
+  );
+}
+
+
+
+=== FILE: src\lib\api.js ===
+const API_URL =
+  process.env.NEXT_PUBLIC_WORDPRESS_API_URL ||
+  'https://dev-acunengy-demo.pantheonsite.io/graphql';
+
+async function fetchAPI(query = '', { variables } = {}) {
+  const headers = { 'Content-Type': 'application/json' };
+
+  try {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ query, variables }),
+      next: { revalidate: 10 },
+    });
+
+    const json = await res.json();
+    if (json.errors) {
+      console.error(
+        'GraphQL Hata Detayı:',
+        JSON.stringify(json.errors, null, 2),
+      );
+      return null;
+    }
+    return json.data;
+  } catch (error) {
+    console.error('Fetch API Error:', error);
+    return null;
+  }
+}
+
+export async function getHomePageData(locale = 'tr') {
+  const currentLang = locale.toLowerCase();
+  const langEnum = locale.toUpperCase();
+
+  const query = `
+    query GetHomePageData($language: LanguageCodeFilterEnum!) {
+      pages(where: { language: $language }, first: 50) {
+        nodes {
+          id
+          title
+          slug
+          uri
+          homepageFields {
+            heroGroup {
+              heroBadge
+              heroTitle
+              heroSubtitle
+              heroBtnText
+              heroVideoUrl
+            }
+            servicesHeaderGroup {
+              badge
+              title
+              description
+              btnText
+            }
+            specializationsHeaderGroup {
+              badge
+              title
+              description
+            }
+            industriesHeaderGroup {
+              badge
+              title
+              description
+            }
+            approachGroup {
+              badge
+              title
+              description
+              item1Title
+              item1Desc
+              item2Title
+              item2Desc
+              item3Title
+              item3Desc
+            }
+            newsHeaderGroup {
+              badge
+              title
+              description
+              btnText
+            }
+            contactGroup {
+              badge
+              title
+              description
+              phone
+              email
+              address
+              whatsapp
+            }
+            aboutGroup {
+              badge
+              title
+              description
+              card1Title
+              card1Desc
+              card2Title
+              card2Desc
+              metric1Value
+              metric1Label
+              metric2Value
+              metric2Label
+            }
+            statsGroup {
+              stat1Val
+              stat1Lbl
+              stat2Val
+              stat2Lbl
+              stat3Val
+              stat3Lbl
+              stat4Val
+              stat4Lbl
+            } 
+          }
+        }
+      }
+
+      services(where: { language: $language }, first: 100) {
+        nodes {
+          id
+          title
+          slug
+          uri
+          serviceFields {
+            iconName
+            shortDesc
+          }
+        }
+      }
+
+      specializations(where: { language: $language }, first: 20) {
+        nodes {
+          id
+          title
+          slug
+          uri
+          featuredImage {
+            node {
+              sourceUrl
+            }
+          }
+          specFields {
+            category
+            code
+            description
+            iconName
+            statsValue
+            statsLabel
+          }
+        }
+      }
+
+      industries(where: { language: $language }, first: 20) {
+        nodes {
+          id
+          title
+          slug
+          uri
+          featuredImage {
+            node {
+              sourceUrl
+            }
+          }
+          industryFields {
+            tag
+            description
+          }
+        }
+      }
+
+      posts(where: { language: $language }, first: 20) {
+        nodes {
+          id
+          title
+          slug
+          uri
+          date
+          categories {
+            nodes {
+              name
+            }
+          }
+          featuredImage {
+            node {
+              sourceUrl
+            }
+          }
+        }
+      }
+    }
+  `;
+
+  const data = await fetchAPI(query, { variables: { language: langEnum } });
+
+  const allPages = data?.pages?.nodes || [];
+  const rawServices = data?.services?.nodes || [];
+  const rawSpecs = data?.specializations?.nodes || [];
+  const rawIndustries = data?.industries?.nodes || [];
+  const rawPosts = data?.posts?.nodes || [];
+
+  let homeNode = allPages.find((p) => {
+    if (currentLang === 'en') {
+      return p.slug === 'home' || p.uri?.includes('/en/');
+    }
+    return (
+      p.slug === 'ana-sayfa' ||
+      p.slug === 'anasayfa' ||
+      !p.uri?.includes('/en/')
+    );
+  });
+
+  if (!homeNode && allPages.length > 0) {
+    homeNode = allPages[0];
+  }
+
+  const filteredServices = rawServices.filter((s) =>
+    currentLang === 'en' ? s.uri?.includes('/en/') : !s.uri?.includes('/en/'),
+  );
+
+  const filteredSpecs = rawSpecs.filter((s) =>
+    currentLang === 'en' ? s.uri?.includes('/en/') : !s.uri?.includes('/en/'),
+  );
+
+  const filteredIndustries = rawIndustries.filter((i) =>
+    currentLang === 'en' ? i.uri?.includes('/en/') : !i.uri?.includes('/en/'),
+  );
+
+  const filteredPosts = rawPosts
+    .filter((p) =>
+      currentLang === 'en' ? p.uri?.includes('/en/') : !p.uri?.includes('/en/'),
+    )
+    .slice(0, 3);
+
+  return {
+    pageFields: homeNode?.homepageFields || null,
+    servicesList: filteredServices,
+    industriesList: filteredIndustries,
+    specializationsList: filteredSpecs,
+    newsList: filteredPosts,
+  };
+}
+
+
+
+=== FILE: src\proxy.js ===
+import { NextResponse } from 'next/server';
+
+const locales = ['en', 'tr'];
+const defaultLocale = 'en';
+
+export function proxy(request) {
+  const { pathname } = request.nextUrl;
+
+  if (
+    pathname.startsWith('/wp-admin') ||
+    pathname.startsWith('/wp-login.php') ||
+    pathname.startsWith('/wp-json') ||
+    pathname.startsWith('/wp-content') ||
+    pathname.startsWith('/wp-includes')
+  ) {
+    return;
+  }
+
+  const pathnameHasLocale = locales.some(
+    (locale) => pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`,
+  );
+
+  if (pathnameHasLocale) return;
+
+  if (pathname.startsWith('/_next') || pathname.includes('.')) {
+    return;
+  }
+
+  request.nextUrl.pathname = `/${defaultLocale}${pathname}`;
+  return NextResponse.redirect(request.nextUrl);
+}
+
+export const config = {
+  matcher: [
+    '/((?!api|_next/static|_next/image|favicon.ico|wp-admin|wp-login.php|wp-content|wp-includes).*)',
+  ],
+};
+
+

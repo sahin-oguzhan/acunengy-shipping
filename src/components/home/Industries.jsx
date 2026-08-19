@@ -21,9 +21,9 @@ export default function Industries({ dict, locale, wpData }) {
     .map((item, index) => ({
       id: item.id || `ind-${index}`,
       title: item.title,
-      description: '',
       image: item.featuredImage?.node?.sourceUrl || '',
-      tag: `0${index + 1} / SECTOR`,
+      description: item.industryFields?.description || '',
+      tag: item.industryFields?.tag || `0${index + 1} / SECTOR`,
     }));
 
   if (!displayTitle && !displayBadge && finalIndustries.length === 0) {
