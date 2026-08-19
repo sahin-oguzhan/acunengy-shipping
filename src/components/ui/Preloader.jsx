@@ -10,7 +10,9 @@ export default function Preloader() {
     const hasLoaded = sessionStorage.getItem('hasLoaded');
 
     if (hasLoaded) {
-      setIsLoading(false);
+      // ESLint senkron state güncellemesi uyarısını (cascading renders)
+      // aşmak için 0 gecikmeli setTimeout kullanıyoruz.
+      setTimeout(() => setIsLoading(false), 0);
       return;
     }
 

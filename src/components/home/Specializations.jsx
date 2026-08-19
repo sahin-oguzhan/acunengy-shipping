@@ -88,10 +88,6 @@ export default function Specializations({ dict, locale, wpData }) {
             {sectors.map((sector, index) => {
               const isExpanded = hoveredIndex === index;
 
-              // Dinamik Sektör Kodu (Paneldeki 'code' basılır, boşsa '01 / SECTOR' basılır)
-              const formattedIndex = String(index + 1).padStart(2, '0');
-              const displayCode = sector.code || `${formattedIndex} / SECTOR`;
-
               return (
                 <div
                   key={sector.id}
@@ -128,10 +124,12 @@ export default function Specializations({ dict, locale, wpData }) {
 
                   {/* İÇERİK */}
                   <div className="relative z-10 text-white">
-                    {/* SEKTÖR KODU / NUMARATÖR (code alanından çekilir) */}
-                    <span className="font-mono text-xs text-[#38bdf8] block mb-2 font-bold tracking-widest uppercase drop-shadow-sm">
-                      {displayCode}
-                    </span>
+                    {/* SEKTÖR KODU / NUMARATÖR (Sadece WordPress'ten dolu gelirse gösterilir) */}
+                    {sector.code && (
+                      <span className="font-mono text-xs text-[#38bdf8] block mb-2 font-bold tracking-widest uppercase drop-shadow-sm">
+                        {sector.code}
+                      </span>
+                    )}
 
                     <h3 className="text-2xl md:text-3xl font-black text-white font-heading mb-3 tracking-tight drop-shadow-md">
                       {sector.title}

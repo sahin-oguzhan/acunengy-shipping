@@ -23,7 +23,7 @@ export default function Industries({ dict, locale, wpData }) {
       title: item.title,
       image: item.featuredImage?.node?.sourceUrl || '',
       description: item.industryFields?.description || '',
-      tag: item.industryFields?.tag || `0${index + 1} / SECTOR`,
+      tag: item.industryFields?.tag || '', // FALLBACK KALDIRILDI
     }));
 
   if (!displayTitle && !displayBadge && finalIndustries.length === 0) {
@@ -97,7 +97,7 @@ export default function Industries({ dict, locale, wpData }) {
                   {/* Gradyan Maskesi */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/65 to-black/30" />
 
-                  {/* Üst Tag */}
+                  {/* Üst Tag (Eğer tag varsa render edilir) */}
                   {ind.tag && (
                     <div className="absolute top-6 left-6 z-20">
                       <span className="font-mono text-xs text-white font-bold uppercase tracking-widest bg-black/70 px-3.5 py-1.5 rounded-full border border-white/20 backdrop-blur-md shadow-md">
