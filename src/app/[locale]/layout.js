@@ -57,8 +57,9 @@ export async function generateMetadata({ params }) {
       'Gemi Acenteliği',
       'Acunengy',
     ],
-    authors: [{ name: 'Oğuzhan Şahin' }],
-    creator: 'Oğuzhan Şahin',
+    authors: [{ name: 'Acunengy Shipping & Maritime Services' }],
+    creator: 'Acunengy Shipping & Maritime Services',
+    publisher: 'Acunengy Shipping & Maritime Services',
 
     openGraph: {
       title: title,
