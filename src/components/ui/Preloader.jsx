@@ -34,6 +34,7 @@ export default function Preloader() {
           alt="Acunengy Shipping Logo"
           fill
           priority
+          sizes="(max-width: 768px) 100vw, 500px"
           className="object-contain brightness-0 invert"
         />
       </div>
