@@ -1,11 +1,9 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
-import emailjs from '@emailjs/browser';
+import React, { useState } from 'react';
 import FadeIn from '@/components/ui/FadeIn';
 
 export default function Contact({ wpData, locale = 'tr' }) {
-  const formRef = useRef();
   const isTr = locale.toLowerCase() === 'tr';
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -32,36 +30,42 @@ export default function Contact({ wpData, locale = 'tr' }) {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const sendEmail = (e) => {
+  const sendEmail = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setSubmitStatus(null);
 
-    emailjs
-      .sendForm(
-        process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID,
-        process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID,
-        formRef.current,
-        process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY,
-      )
-      .then(
-        () => {
-          setSubmitStatus('success');
-          setIsSubmitting(false);
-          setFormData({
-            user_name: '',
-            user_email: '',
-            user_service: '',
-            message: '',
-          });
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formData.user_name,
+          email: formData.user_email,
+          service: formData.user_service,
+          message: formData.message,
+          subject: `İletişim Talebi: ${formData.user_name} - ${formData.user_service || 'Genel'}`,
+        }),
+      });
 
-          setTimeout(() => setSubmitStatus(null), 4000);
-        },
-        (error) => {
-          setSubmitStatus('error');
-          setIsSubmitting(false);
-          console.error('EmailJS Error:', error.text);
-        },
-      );
+      if (response.ok) {
+        setSubmitStatus('success');
+        setFormData({
+          user_name: '',
+          user_email: '',
+          user_service: '',
+          message: '',
+        });
+        setTimeout(() => setSubmitStatus(null), 4000);
+      } else {
+        setSubmitStatus('error');
+      }
+    } catch (error) {
+      console.error('Contact API Error:', error);
+      setSubmitStatus('error');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -172,7 +176,7 @@ export default function Contact({ wpData, locale = 'tr' }) {
 
         <FadeIn direction="up">
           <div className="bg-customSurface/60 backdrop-blur-xl p-8 md:p-12 border border-customBorder/80 rounded-3xl shadow-2xl relative z-10">
-            <form ref={formRef} onSubmit={sendEmail} className="space-y-6">
+            <form onSubmit={sendEmail} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label className="font-mono text-xs text-customMuted uppercase font-bold tracking-wider block">

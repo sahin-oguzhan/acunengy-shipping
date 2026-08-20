@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import emailjs from '@emailjs/browser';
 
 export default function QuoteModal({ isOpen, onClose, locale = 'tr' }) {
   const isTr = locale.toLowerCase() === 'tr';
@@ -71,7 +70,7 @@ export default function QuoteModal({ isOpen, onClose, locale = 'tr' }) {
     setStep((prev) => Math.max(prev - 1, 1));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     let newErrors = {};
     if (!formData.name.trim())
@@ -89,46 +88,47 @@ export default function QuoteModal({ isOpen, onClose, locale = 'tr' }) {
     setErrors({});
     setIsSubmitting(true);
 
-    emailjs
-      .send(
-        process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID,
-        process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID,
-        {
-          user_name: formData.name,
-          user_email: formData.email,
-          user_service: `[TEKLİF MODALI] ${selectedService}`,
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          service: selectedService,
+          subject: `[TEKLİF TALEBİ] ${selectedService} - ${formData.vesselName || formData.name}`,
           message: `🚢 Gemi / IMO: ${formData.vesselName}\n📍 Hedef Liman: ${formData.port}\n📝 Ek Notlar: ${formData.message || 'Belirtilmedi'}`,
-        },
-        process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY,
-      )
-      .then(
-        () => {
-          setIsSubmitting(false);
-          setIsSubmitted(true);
+        }),
+      });
 
-          setTimeout(() => {
-            setIsSubmitted(false);
-            setStep(1);
-            setFormData({
-              vesselName: '',
-              port: '',
-              name: '',
-              email: '',
-              message: '',
-            });
-            onClose();
-          }, 4000);
-        },
-        (error) => {
-          setIsSubmitting(false);
-          console.error('Modal EmailJS Error:', error);
-          setErrors({
-            submit: isTr
-              ? 'Gönderim başarısız oldu. Lütfen tekrar deneyin.'
-              : 'Transmission failed. Please try again.',
+      if (response.ok) {
+        setIsSubmitting(false);
+        setIsSubmitted(true);
+
+        setTimeout(() => {
+          setIsSubmitted(false);
+          setStep(1);
+          setFormData({
+            vesselName: '',
+            port: '',
+            name: '',
+            email: '',
+            message: '',
           });
-        },
-      );
+          onClose();
+        }, 4000);
+      } else {
+        throw new Error('API Hatası');
+      }
+    } catch (error) {
+      setIsSubmitting(false);
+      console.error('Modal API Error:', error);
+      setErrors({
+        submit: isTr
+          ? 'Gönderim başarısız oldu. Lütfen tekrar deneyin.'
+          : 'Transmission failed. Please try again.',
+      });
+    }
   };
 
   return (
